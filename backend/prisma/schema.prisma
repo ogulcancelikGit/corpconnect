@@ -1,0 +1,371 @@
+// ============================================================
+// CorpConnect - Prisma Schema
+// Database: MySQL 8.0
+// ORM: Prisma 5.22
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUM TANIMLAMALARI
+// ============================================================
+
+enum Role {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum NotificationType {
+  NEWS
+  POLL
+  MESSAGE
+  SYSTEM
+}
+
+// ============================================================
+// KULLANICI & KİMLİK
+// ============================================================
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique @db.VarChar(255)
+  password       String    @db.VarChar(255)
+  firstName      String    @db.VarChar(100)
+  lastName       String    @db.VarChar(100)
+  role           Role      @default(EMPLOYEE)
+  isActive       Boolean   @default(true)
+  emailVerified  Boolean   @default(false)
+  lastLoginAt    DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  profile              UserProfile?
+  refreshTokens        RefreshToken[]
+  passwordResets       PasswordReset[]
+  news                 News[]
+  polls                Poll[]
+  pollVotes            PollVote[]
+  trainings            Training[]
+  files                File[]
+  createdConversations Conversation[]
+  conversationMembers  ConversationMember[]
+  sentMessages         Message[]
+  notifications        Notification[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model UserProfile {
+  userId     Int      @id
+  avatar     String?  @db.VarChar(500)
+  phone      String?  @db.VarChar(20)
+  department String?  @db.VarChar(100)
+  position   String?  @db.VarChar(100)
+  bio        String?  @db.VarChar(500)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  token     String    @unique @db.VarChar(500)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model PasswordReset {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  token     String    @unique @db.VarChar(500)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_resets")
+}
+
+// ============================================================
+// İÇERİK MODÜLLERİ
+// ============================================================
+
+model News {
+  id        Int       @id @default(autoincrement())
+  authorId  Int
+  title     String    @db.VarChar(255)
+  content   String    @db.Text
+  category  String?   @db.VarChar(100)
+  isPinned  Boolean   @default(false)
+  viewCount Int       @default(0)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([isPinned, createdAt])
+  @@index([category])
+  @@map("news")
+}
+
+model Poll {
+  id         Int       @id @default(autoincrement())
+  authorId   Int
+  question   String    @db.VarChar(500)
+  startDate  DateTime
+  endDate    DateTime
+  isActive   Boolean   @default(true)
+  totalVotes Int       @default(0)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  author  User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  options PollOption[]
+  votes   PollVote[]
+
+  @@index([authorId])
+  @@index([isActive, endDate])
+  @@map("polls")
+}
+
+model PollOption {
+  id         Int    @id @default(autoincrement())
+  pollId     Int
+  optionText String @db.VarChar(255)
+  voteCount  Int    @default(0)
+
+  poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@index([pollId])
+  @@map("poll_options")
+}
+
+model PollVote {
+  id        Int      @id @default(autoincrement())
+  pollId    Int
+  optionId  Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+  @@index([userId])
+  @@map("poll_votes")
+}
+
+model Training {
+  id          Int       @id @default(autoincrement())
+  authorId    Int
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  videoUrl    String?   @db.VarChar(500)
+  fileUrl     String?   @db.VarChar(500)
+  category    String?   @db.VarChar(100)
+  duration    Int?
+  viewCount   Int       @default(0)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  files  TrainingFile[]
+
+  @@index([authorId])
+  @@index([category])
+  @@map("trainings")
+}
+
+// ============================================================
+// DOSYA YÖNETİMİ
+// ============================================================
+
+model File {
+  id           Int       @id @default(autoincrement())
+  originalName String    @db.VarChar(255)
+  storedName   String    @db.VarChar(255)
+  mimeType     String    @db.VarChar(100)
+  fileSize     Int
+  filePath     String    @db.VarChar(500)
+  uploadedBy   Int
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  uploader      User           @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  trainingFiles TrainingFile[]
+  messageFiles  MessageFile[]
+
+  @@index([uploadedBy])
+  @@map("files")
+}
+
+model TrainingFile {
+  id         Int @id @default(autoincrement())
+  trainingId Int
+  fileId     Int
+
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  file     File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, fileId])
+  @@index([trainingId])
+  @@map("training_files")
+}
+
+// ============================================================
+// MESAJLAŞMA
+// ============================================================
+
+model Conversation {
+  id            Int              @id @default(autoincrement())
+  createdBy     Int
+  type          ConversationType
+  name          String?          @db.VarChar(100)
+  avatar        String?          @db.VarChar(500)
+  lastMessageAt DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  creator User                 @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  members ConversationMember[]
+  messages Message[]
+
+  @@index([createdBy])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id             Int        @id @default(autoincrement())
+  conversationId Int
+  userId         Int
+  role           MemberRole @default(MEMBER)
+  lastReadAt     DateTime?
+  joinedAt       DateTime   @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_members")
+}
+
+model Message {
+  id             Int           @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String?       @db.Text
+  status         MessageStatus @default(SENT)
+  isEdited       Boolean       @default(false)
+  readAt         DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  conversation Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  files        MessageFile[]
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model MessageFile {
+  id        Int @id @default(autoincrement())
+  messageId Int
+  fileId    Int
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([messageId])
+  @@map("message_files")
+}
+
+// ============================================================
+// BİLDİRİM & SİSTEM
+// ============================================================
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  title     String           @db.VarChar(255)
+  body      String           @db.VarChar(500)
+  type      NotificationType
+  link      String?          @db.VarChar(500)
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model SystemSettings {
+  id           Int      @id @default(autoincrement())
+  settingKey   String   @unique @db.VarChar(100)
+  settingValue String   @db.Text
+  updatedAt    DateTime @updatedAt
+
+  @@index([settingKey])
+  @@map("system_settings")
+}

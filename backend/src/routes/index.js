@@ -1,0 +1,26 @@
+const express = require('express')
+const router = express.Router()
+
+const authRoutes = require('./auth.routes')
+const userRoutes = require('./user.routes')
+const dashboardRoutes = require('./dashboard.routes')
+const newsRoutes = require('./news.routes')
+const pollRoutes = require('./poll.routes')
+const trainingRoutes = require('./training.routes')
+const fileRoutes = require('./file.routes')
+const conversationRoutes = require('./conversation.routes')
+const notificationRoutes = require('./notification.routes')
+const adminRoutes = require('./admin.routes')
+
+router.use('/auth', authRoutes)
+router.use('/users', userRoutes)
+router.use('/dashboard', dashboardRoutes)
+router.use('/news', newsRoutes)
+router.use('/polls', pollRoutes)
+router.use('/training', trainingRoutes)
+router.use('/files', fileRoutes)
+router.use('/conversations', conversationRoutes)
+router.use('/notifications', notificationRoutes)
+router.use('/admin', adminRoutes)
+
+module.exports = router
