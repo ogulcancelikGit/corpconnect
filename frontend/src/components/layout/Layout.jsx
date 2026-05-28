@@ -3,9 +3,9 @@ import Navbar from './Navbar'
 
 const Layout = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="p-6">
+      <main className="max-w-screen-xl mx-auto px-6 py-6">
         <Outlet />
       </main>
     </div>

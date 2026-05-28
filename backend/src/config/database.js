@@ -1,13 +1,14 @@
 const { PrismaClient } = require('@prisma/client')
+const logger = require('../utils/logger')
 
 const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 })
 
 prisma.$connect()
-  .then(() => console.log('Veritabanı bağlantısı başarılı'))
+  .then(() => logger.info('Veritabanı bağlantısı başarılı'))
   .catch((err) => {
-    console.error('Veritabanı bağlantı hatası:', err)
+    logger.error('Veritabanı bağlantı hatası', { err })
     process.exit(1)
   })
 

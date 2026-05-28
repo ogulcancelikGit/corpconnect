@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ':*)",
+      "Bash(npx prisma *)",
+      "PowerShell(Get-Command claude -ErrorAction SilentlyContinue)",
+      "Bash(npm run *)",
+      "mcp__magic__21st_magic_component_refiner",
+      "mcp__magic__21st_magic_component_builder",
+      "Bash(npx vite *)",
+      "Bash(xargs grep *)",
+      "Bash(npm install *)",
+      "Bash(node *)",
+      "Bash(grep -v \"^$\")",
+      "WebSearch",
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && grep -n \"createNotification\" {}')",
+      "Bash(tasklist)",
+      "Bash(npx eslint *)",
+      "Read(//c/Users/ogulc/AppData/Local/Temp/claude/C--Users-ogulc-corpconnect/480f74e8-4825-4868-a4dc-999ff058c71f/tasks/**)",
+      "Bash(grep *)"
+    ]
+  }
+}

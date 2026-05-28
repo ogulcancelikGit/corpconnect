@@ -1,6 +1,9 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
+const { notifyAll } = require('../utils/notification.util')
+const { log } = require('../utils/activityLog.util')
 
 // GET /api/training
 const getTrainings = async (req, res) => {
@@ -52,14 +55,24 @@ const getTrainings = async (req, res) => {
               },
             },
           },
+          views: {
+            where: { userId: req.user.id },
+            select: { id: true },
+            take: 1,
+          },
         },
       }),
       prisma.training.count({ where }),
     ])
 
-    return paginated(res, trainings, getPaginationMeta(total, page, limit), 'Eğitimler getirildi')
+    const enriched = trainings.map(({ views, ...rest }) => ({
+      ...rest,
+      isViewed: views.length > 0,
+    }))
+
+    return paginated(res, enriched, getPaginationMeta(total, page, limit), 'Eğitimler getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Eğitimler getirilemedi', 500)
   }
 }
@@ -105,6 +118,7 @@ const getTrainingById = async (req, res) => {
             },
           },
         },
+        _count: { select: { views: true } },
       },
     })
 
@@ -112,15 +126,40 @@ const getTrainingById = async (req, res) => {
       return error(res, 'Eğitim bulunamadı', 404)
     }
 
-    await prisma.training.update({
-      where: { id: parseInt(id) },
-      data: { viewCount: { increment: 1 } },
+    return success(res, training, 'Eğitim getirildi')
+  } catch (err) {
+    logger.error(err)
+    return error(res, 'Eğitim getirilemedi', 500)
+  }
+}
+
+// POST /api/training/:id/view  — per-user idempotent view tracking
+const markAsViewed = async (req, res) => {
+  try {
+    const trainingId = parseInt(req.params.id)
+    const userId = req.user.id
+
+    const existing = await prisma.trainingView.findUnique({
+      where: { userId_trainingId: { userId, trainingId } },
+      select: { id: true },
     })
 
-    return success(res, { ...training, viewCount: training.viewCount + 1 }, 'Eğitim getirildi')
+    if (existing) {
+      return success(res, { counted: false }, 'Daha önce görüntülendi')
+    }
+
+    await prisma.$transaction([
+      prisma.trainingView.create({ data: { userId, trainingId } }),
+      prisma.training.update({
+        where: { id: trainingId },
+        data: { viewCount: { increment: 1 } },
+      }),
+    ])
+
+    return success(res, { counted: true }, 'Görüntülenme kaydedildi')
   } catch (err) {
-    console.error(err)
-    return error(res, 'Eğitim getirilemedi', 500)
+    logger.error(err)
+    return error(res, 'Görüntülenme kaydedilemedi', 500)
   }
 }
 
@@ -155,9 +194,19 @@ const createTraining = async (req, res) => {
       },
     })
 
+    notifyAll({
+      title: 'Yeni Eğitim',
+      body: training.title,
+      type: 'TRAINING',
+      link: `/training/${training.id}`,
+      excludeUserId: req.user.id,
+    }).catch((e) => logger.error('Eğitim bildirimi gönderilemedi', { e }))
+
+    log({ userId: req.user.id, action: 'TRAINING_CREATE', entity: 'Training', entityId: training.id, detail: training.title, ip: req.ip })
+
     return success(res, training, 'Eğitim oluşturuldu', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Eğitim oluşturulamadı', 500)
   }
 }
@@ -205,7 +254,7 @@ const updateTraining = async (req, res) => {
 
     return success(res, training, 'Eğitim güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Eğitim güncellenemedi', 500)
   }
 }
@@ -234,7 +283,7 @@ const deleteTraining = async (req, res) => {
 
     return success(res, null, 'Eğitim silindi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Eğitim silinemedi', 500)
   }
 }
@@ -251,7 +300,7 @@ const getCategories = async (req, res) => {
 
     return success(res, categories.map((c) => c.category), 'Kategoriler getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kategoriler getirilemedi', 500)
   }
 }
@@ -263,4 +312,5 @@ module.exports = {
   updateTraining,
   deleteTraining,
   getCategories,
+  markAsViewed,
 }

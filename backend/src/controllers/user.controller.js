@@ -1,3 +1,4 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
@@ -26,7 +27,7 @@ const getMe = async (req, res) => {
 
     return success(res, user, 'Profil getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Profil getirilemedi', 500)
   }
 }
@@ -34,7 +35,7 @@ const getMe = async (req, res) => {
 // PUT /api/users/me
 const updateMe = async (req, res) => {
   try {
-    const { firstName, lastName, phone, department, position, bio } = req.body
+    const { firstName, lastName, phone, department, position, bio, birthDate, hireDate } = req.body
 
     const user = await prisma.user.update({
       where: { id: req.user.id },
@@ -47,6 +48,8 @@ const updateMe = async (req, res) => {
             ...(department !== undefined && { department }),
             ...(position !== undefined && { position }),
             ...(bio !== undefined && { bio }),
+            ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
+            ...(hireDate !== undefined && { hireDate: hireDate ? new Date(hireDate) : null }),
           },
         },
       },
@@ -63,7 +66,7 @@ const updateMe = async (req, res) => {
 
     return success(res, user, 'Profil güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Profil güncellenemedi', 500)
   }
 }
@@ -96,7 +99,7 @@ const uploadAvatar = async (req, res) => {
 
     return success(res, { avatar: avatarPath }, 'Avatar güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Avatar güncellenemedi', 500)
   }
 }
@@ -123,7 +126,7 @@ const deleteAvatar = async (req, res) => {
 
     return success(res, null, 'Avatar silindi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Avatar silinemedi', 500)
   }
 }
@@ -175,7 +178,7 @@ const getUsers = async (req, res) => {
 
     return paginated(res, users, getPaginationMeta(total, page, limit), 'Kullanıcılar getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcılar getirilemedi', 500)
   }
 }
@@ -214,7 +217,7 @@ const searchUsers = async (req, res) => {
 
     return success(res, users, 'Kullanıcılar bulundu')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı araması yapılamadı', 500)
   }
 }
@@ -245,7 +248,7 @@ const getUserById = async (req, res) => {
 
     return success(res, user, 'Kullanıcı getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı getirilemedi', 500)
   }
 }
@@ -280,7 +283,7 @@ const updateUser = async (req, res) => {
 
     return success(res, user, 'Kullanıcı güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı güncellenemedi', 500)
   }
 }
@@ -301,7 +304,7 @@ const deleteUser = async (req, res) => {
 
     return success(res, null, 'Kullanıcı silindi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı silinemedi', 500)
   }
 }
@@ -328,7 +331,7 @@ const updateUserRole = async (req, res) => {
 
     return success(res, user, 'Kullanıcı rolü güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı rolü güncellenemedi', 500)
   }
 }
@@ -351,7 +354,7 @@ const updateUserStatus = async (req, res) => {
 
     return success(res, user, `Kullanıcı ${isActive ? 'aktif' : 'pasif'} yapıldı`)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı durumu güncellenemedi', 500)
   }
 }

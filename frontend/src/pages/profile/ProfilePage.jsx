@@ -1,85 +1,128 @@
 import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Camera } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import userService from '../../services/user.service'
 import authService from '../../services/auth.service'
+import notificationService from '../../services/notification.service'
 import toast from 'react-hot-toast'
+import PageHeader from '../../components/common/PageHeader'
+import StatusPill from '../../components/common/StatusPill'
+import { profileSchema, changePasswordSchema } from '../../schemas/profile.schema'
+
+const ROLE_LABELS = { ADMIN: 'Yönetici', MANAGER: 'Müdür', EMPLOYEE: 'Çalışan' }
+
+const NOTIF_TYPES = [
+  { key: 'MESSAGE',     label: 'Mesajlar',      desc: 'Yeni mesaj, yanıt ve emoji tepkileri' },
+  { key: 'MENTION',     label: 'Bahsetmeler',   desc: 'Mesajlarda @ ile etiketlendiğinizde' },
+  { key: 'NEWS',        label: 'Haberler',      desc: 'Yeni şirket duyuruları' },
+  { key: 'POLL',        label: 'Anketler',      desc: 'Yeni anket ve sonuçlar' },
+  { key: 'CALENDAR',    label: 'Etkinlikler',   desc: 'Takvim davetleri ve hatırlatmalar' },
+  { key: 'TASK',        label: 'Görevler',      desc: 'Atanan ve güncellenen görevler' },
+  { key: 'LEAVE',       label: 'İzin',          desc: 'İzin talepleri ve onay durumu' },
+  { key: 'EXPENSE',     label: 'Masraflar',     desc: 'Masraf talepleri ve onay durumu' },
+  { key: 'SUGGESTION',  label: 'Öneriler',      desc: 'Önerileriniz hakkında güncellemeler' },
+  { key: 'TRAINING',    label: 'Eğitimler',     desc: 'Yeni eğitim materyalleri' },
+  { key: 'CELEBRATION', label: 'Kutlamalar',    desc: 'Doğum günü ve iş yıldönümleri' },
+  { key: 'SYSTEM',      label: 'Sistem',        desc: 'Yönetici duyuruları ve sistem mesajları' },
+]
+
+const PROFILE_DEFAULTS = {
+  firstName: '', lastName: '', phone: '', department: '',
+  position: '', bio: '', birthDate: '', hireDate: '',
+}
+
+const PASSWORD_DEFAULTS = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    department: '',
-    position: '',
-    bio: '',
-  })
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  })
   const [activeTab, setActiveTab] = useState('profile')
-  const [saving, setSaving] = useState(false)
-  const [changingPassword, setChangingPassword] = useState(false)
+  const [notifPrefs, setNotifPrefs] = useState(null)
+  const [savingPrefs, setSavingPrefs] = useState(false)
+
+  const profileForm = useForm({
+    resolver: zodResolver(profileSchema),
+    defaultValues: PROFILE_DEFAULTS,
+  })
+
+  const passwordForm = useForm({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: PASSWORD_DEFAULTS,
+  })
 
   useEffect(() => {
     if (user) {
-      setForm({
+      profileForm.reset({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         phone: user.profile?.phone || '',
         department: user.profile?.department || '',
         position: user.profile?.position || '',
         bio: user.profile?.bio || '',
+        birthDate: user.profile?.birthDate ? user.profile.birthDate.split('T')[0] : '',
+        hireDate: user.profile?.hireDate ? user.profile.hireDate.split('T')[0] : '',
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault()
-    setSaving(true)
+  const onUpdateProfile = async (data) => {
     try {
-      const res = await userService.updateMe(form)
+      const res = await userService.updateMe(data)
       updateUser(res.data)
       toast.success('Profil güncellendi')
     } catch {
       toast.error('Profil güncellenemedi')
-    } finally {
-      setSaving(false)
     }
   }
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault()
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('Yeni şifreler eşleşmiyor')
-      return
-    }
-    if (passwordForm.newPassword.length < 8) {
-      toast.error('Şifre en az 8 karakter olmalı')
-      return
-    }
-    setChangingPassword(true)
+  const onChangePassword = async (data) => {
     try {
       await authService.changePassword({
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
       })
       toast.success('Şifre değiştirildi')
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      passwordForm.reset(PASSWORD_DEFAULTS)
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Şifre değiştirilemedi')
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab !== 'notifications' || notifPrefs) return
+    notificationService.getPreferences()
+      .then((res) => {
+        const fromServer = res.data || {}
+        const filled = NOTIF_TYPES.reduce((acc, t) => ({
+          ...acc,
+          [t.key]: fromServer[t.key] !== undefined ? fromServer[t.key] : true,
+        }), {})
+        setNotifPrefs(filled)
+      })
+      .catch(() => toast.error('Tercihler yüklenemedi'))
+  }, [activeTab, notifPrefs])
+
+  const togglePref = (key) => {
+    setNotifPrefs((p) => ({ ...p, [key]: !p[key] }))
+  }
+
+  const handleSavePrefs = async () => {
+    setSavingPrefs(true)
+    try {
+      await notificationService.updatePreferences(notifPrefs)
+      toast.success('Tercihler kaydedildi')
+    } catch {
+      toast.error('Tercihler kaydedilemedi')
     } finally {
-      setChangingPassword(false)
+      setSavingPrefs(false)
     }
   }
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    setLoading(true)
     try {
       await userService.uploadAvatar(file)
       const res = await userService.getMe()
@@ -87,19 +130,26 @@ const ProfilePage = () => {
       toast.success('Avatar güncellendi')
     } catch {
       toast.error('Avatar güncellenemedi')
-    } finally {
-      setLoading(false)
     }
   }
 
-  return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl font-semibold text-gray-800 mb-6">Profil</h1>
+  const tabs = [
+    { key: 'profile', label: 'Profil Bilgileri' },
+    { key: 'password', label: 'Şifre Değiştir' },
+    { key: 'notifications', label: 'Bildirim Tercihleri' },
+  ]
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
+  const { register: registerProfile, handleSubmit: submitProfile, formState: { errors: profileErrors, isSubmitting: profileSubmitting } } = profileForm
+  const { register: registerPassword, handleSubmit: submitPassword, formState: { errors: passwordErrors, isSubmitting: passwordSubmitting } } = passwordForm
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6 pb-12">
+      <PageHeader title="Profil" description="Hesap bilgilerini ve ayarlarını yönet" />
+
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-semibold">
+            <div className="w-16 h-16 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center text-lg font-semibold overflow-hidden">
               {user?.profile?.avatar ? (
                 <img
                   src={`/${user.profile.avatar}`}
@@ -107,11 +157,14 @@ const ProfilePage = () => {
                   className="w-16 h-16 rounded-full object-cover"
                 />
               ) : (
-                `${user?.firstName?.[0]}${user?.lastName?.[0]}`
+                <>{user?.firstName?.[0]}{user?.lastName?.[0]}</>
               )}
             </div>
-            <label className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700">
-              <span className="text-white text-xs">+</span>
+            <label
+              className="absolute bottom-0 right-0 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
+              title="Avatar değiştir"
+            >
+              <Camera size={11} strokeWidth={2} className="text-white" />
               <input
                 type="file"
                 accept="image/*"
@@ -120,143 +173,207 @@ const ProfilePage = () => {
               />
             </label>
           </div>
-          <div>
-            <h2 className="font-semibold text-gray-800">{user?.firstName} {user?.lastName}</h2>
-            <p className="text-sm text-gray-500">{user?.email}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${
-              user?.role === 'ADMIN' ? 'bg-purple-100 text-purple-600' :
-              user?.role === 'MANAGER' ? 'bg-green-100 text-green-600' :
-              'bg-gray-100 text-gray-600'
-            }`}>
-              {user?.role}
-            </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-semibold text-gray-900">{user?.firstName} {user?.lastName}</h2>
+            <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+            <div className="mt-1.5">
+              <StatusPill label={ROLE_LABELS[user?.role] || user?.role} />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-2 mb-4">
-        {['profile', 'password'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              activeTab === tab
-                ? 'bg-blue-600 text-white'
-                : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            {tab === 'profile' ? 'Profil Bilgileri' : 'Şifre Değiştir'}
-          </button>
-        ))}
+      <div className="border-b border-gray-200">
+        <div className="flex gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeTab === tab.key
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        {activeTab === 'profile' ? (
-          <form onSubmit={handleUpdateProfile} className="space-y-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        {activeTab === 'profile' && (
+          <form onSubmit={submitProfile(onUpdateProfile)} className="space-y-4" noValidate>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">Ad</label>
                 <input
                   type="text"
-                  value={form.firstName}
-                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                  {...registerProfile('firstName')}
                 />
+                {profileErrors.firstName && <p className="text-xs text-red-500 mt-1">{profileErrors.firstName.message}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">Soyad</label>
                 <input
                   type="text"
-                  value={form.lastName}
-                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                  {...registerProfile('lastName')}
                 />
+                {profileErrors.lastName && <p className="text-xs text-red-500 mt-1">{profileErrors.lastName.message}</p>}
               </div>
             </div>
             <div>
               <label className="text-sm text-gray-600 mb-1 block">Telefon</label>
               <input
                 type="text"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                {...registerProfile('phone')}
               />
+              {profileErrors.phone && <p className="text-xs text-red-500 mt-1">{profileErrors.phone.message}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">Departman</label>
                 <input
                   type="text"
-                  value={form.department}
-                  onChange={(e) => setForm({ ...form, department: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                  {...registerProfile('department')}
                 />
+                {profileErrors.department && <p className="text-xs text-red-500 mt-1">{profileErrors.department.message}</p>}
               </div>
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">Pozisyon</label>
                 <input
                   type="text"
-                  value={form.position}
-                  onChange={(e) => setForm({ ...form, position: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                  {...registerProfile('position')}
+                />
+                {profileErrors.position && <p className="text-xs text-red-500 mt-1">{profileErrors.position.message}</p>}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Doğum Tarihi</label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                  {...registerProfile('birthDate')}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">İşe Başlama Tarihi</label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                  {...registerProfile('hireDate')}
                 />
               </div>
             </div>
             <div>
               <label className="text-sm text-gray-600 mb-1 block">Biyografi</label>
               <textarea
-                value={form.bio}
-                onChange={(e) => setForm({ ...form, bio: e.target.value })}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                 placeholder="Kendiniz hakkında kısa bir bilgi..."
+                {...registerProfile('bio')}
               />
+              {profileErrors.bio && <p className="text-xs text-red-500 mt-1">{profileErrors.bio.message}</p>}
             </div>
             <button
-              type="submit"
-              disabled={saving}
-              className="w-full bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+              type="submit" disabled={profileSubmitting}
+              className="inline-flex items-center justify-center bg-gray-900 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
-              {saving ? 'Kaydediliyor...' : 'Kaydet'}
+              {profileSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
             </button>
           </form>
-        ) : (
-          <form onSubmit={handleChangePassword} className="space-y-4">
+        )}
+        {activeTab === 'password' && (
+          <form onSubmit={submitPassword(onChangePassword)} className="space-y-4" noValidate>
             <div>
               <label className="text-sm text-gray-600 mb-1 block">Mevcut Şifre</label>
               <input
                 type="password"
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                {...registerPassword('currentPassword')}
               />
+              {passwordErrors.currentPassword && <p className="text-xs text-red-500 mt-1">{passwordErrors.currentPassword.message}</p>}
             </div>
             <div>
               <label className="text-sm text-gray-600 mb-1 block">Yeni Şifre</label>
               <input
                 type="password"
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                {...registerPassword('newPassword')}
               />
+              {passwordErrors.newPassword && <p className="text-xs text-red-500 mt-1">{passwordErrors.newPassword.message}</p>}
             </div>
             <div>
               <label className="text-sm text-gray-600 mb-1 block">Yeni Şifre Tekrar</label>
               <input
                 type="password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                {...registerPassword('confirmPassword')}
               />
+              {passwordErrors.confirmPassword && <p className="text-xs text-red-500 mt-1">{passwordErrors.confirmPassword.message}</p>}
             </div>
             <button
-              type="submit"
-              disabled={changingPassword}
-              className="w-full bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+              type="submit" disabled={passwordSubmitting}
+              className="inline-flex items-center justify-center bg-gray-900 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
-              {changingPassword ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
+              {passwordSubmitting ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
             </button>
           </form>
+        )}
+        {activeTab === 'notifications' && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Hangi bildirimleri almak istediğinizi seçin. Kapattığınız tipler artık gönderilmez.
+            </p>
+            {!notifPrefs ? (
+              <p className="text-sm text-gray-400">Yükleniyor...</p>
+            ) : (
+              <>
+                <div className="divide-y divide-gray-100 border border-gray-200 rounded-md">
+                  {NOTIF_TYPES.map((t) => (
+                    <label
+                      key={t.key}
+                      className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{t.label}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{t.desc}</p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={!!notifPrefs[t.key]}
+                        onClick={() => togglePref(t.key)}
+                        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+                          notifPrefs[t.key] ? 'bg-gray-900' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            notifPrefs[t.key] ? 'translate-x-4' : 'translate-x-0.5'
+                          }`}
+                        />
+                      </button>
+                    </label>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSavePrefs}
+                  disabled={savingPrefs}
+                  className="inline-flex items-center justify-center bg-gray-900 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                >
+                  {savingPrefs ? 'Kaydediliyor...' : 'Kaydet'}
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>

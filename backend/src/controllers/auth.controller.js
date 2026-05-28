@@ -2,6 +2,8 @@ const prisma = require('../config/database')
 const { hashPassword, comparePassword } = require('../utils/bcrypt.util')
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt.util')
 const { success, error } = require('../utils/response.util')
+const { log } = require('../utils/activityLog.util')
+const logger = require('../utils/logger.util')
 const crypto = require('crypto')
 
 // POST /api/auth/register
@@ -47,7 +49,7 @@ const register = async (req, res) => {
 
     return success(res, { user, accessToken, refreshToken }, 'Kayıt başarılı', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kayıt sırasında hata oluştu', 500)
   }
 }
@@ -102,9 +104,11 @@ const login = async (req, res) => {
 
     const { password: _, ...userWithoutPassword } = user
 
+    log({ userId: user.id, action: 'LOGIN', detail: `${user.email} giriş yaptı`, ip: req.ip })
+
     return success(res, { user: userWithoutPassword, accessToken, refreshToken }, 'Giriş başarılı')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Giriş sırasında hata oluştu', 500)
   }
 }
@@ -126,7 +130,7 @@ const logout = async (req, res) => {
 
     return success(res, null, 'Çıkış başarılı')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Çıkış sırasında hata oluştu', 500)
   }
 }
@@ -177,7 +181,7 @@ const refresh = async (req, res) => {
 
     return success(res, { accessToken: newAccessToken, refreshToken: newRefreshToken }, 'Token yenilendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Token yenileme hatası', 500)
   }
 }
@@ -203,7 +207,7 @@ const me = async (req, res) => {
 
     return success(res, user, 'Kullanıcı bilgisi getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcı bilgisi getirilemedi', 500)
   }
 }
@@ -226,11 +230,11 @@ const forgotPassword = async (req, res) => {
       data: { userId: user.id, token, expiresAt },
     })
 
-    console.log(`Şifre sıfırlama token: ${token}`)
+    logger.debug(`Şifre sıfırlama token: ${token}`)
 
     return success(res, null, 'Şifre sıfırlama maili gönderildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Şifre sıfırlama hatası', 500)
   }
 }
@@ -268,7 +272,7 @@ const resetPassword = async (req, res) => {
 
     return success(res, null, 'Şifre başarıyla sıfırlandı')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Şifre sıfırlama hatası', 500)
   }
 }
@@ -302,7 +306,7 @@ const changePassword = async (req, res) => {
 
     return success(res, null, 'Şifre başarıyla değiştirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Şifre değiştirme hatası', 500)
   }
 }

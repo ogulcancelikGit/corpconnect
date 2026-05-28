@@ -3,12 +3,13 @@ const typingHandler = require('./handlers/typing.handler')
 const notificationHandler = require('./handlers/notification.handler')
 const pollHandler = require('./handlers/poll.handler')
 const prisma = require('../config/database')
+const logger = require('../utils/logger')
 
 const onlineUsers = new Map()
 
 const initHandlers = (io) => {
   io.on('connection', (socket) => {
-    console.log(`Kullanıcı bağlandı: ${socket.user.email}`)
+    logger.info(`Kullanıcı bağlandı: ${socket.user.email}`)
 
     // Kullanıcıyı kendi odasına ekle (bildirimler için)
     socket.join(`user:${socket.user.id}`)
@@ -27,7 +28,7 @@ const initHandlers = (io) => {
 
     // Bağlantı kesilince
     socket.on('disconnect', () => {
-      console.log(`Kullanıcı ayrıldı: ${socket.user.email}`)
+      logger.info(`Kullanıcı ayrıldı: ${socket.user.email}`)
       onlineUsers.delete(socket.user.id)
       io.emit('user:offline', { userId: socket.user.id })
     })

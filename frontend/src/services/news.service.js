@@ -10,6 +10,11 @@ const getNewsById = async (id) => {
   return response.data
 }
 
+const markAsViewed = async (id) => {
+  const response = await api.post(`/news/${id}/view`)
+  return response.data
+}
+
 const createNews = async (data) => {
   const response = await api.post('/news', data)
   return response.data
@@ -30,4 +35,4 @@ const togglePin = async (id) => {
   return response.data
 }
 
-export default { getNews, getNewsById, createNews, updateNews, deleteNews, togglePin }
+export default { getNews, getNewsById, markAsViewed, createNews, updateNews, deleteNews, togglePin }

@@ -1,4 +1,5 @@
 const prisma = require('../../config/database')
+const logger = require('../../utils/logger')
 
 const messageHandler = (io, socket) => {
   socket.on('conversation:join', async (conversationId) => {
@@ -12,16 +13,16 @@ const messageHandler = (io, socket) => {
 
       if (isMember) {
         socket.join(`conversation:${conversationId}`)
-        console.log(`${socket.user.email} konuşmaya katıldı: ${conversationId}`)
+        logger.info(`${socket.user.email} konuşmaya katıldı: ${conversationId}`)
       }
     } catch (err) {
-      console.error('conversation:join hatası:', err)
+      logger.error('conversation:join hatası', { err })
     }
   })
 
   socket.on('conversation:leave', (conversationId) => {
     socket.leave(`conversation:${conversationId}`)
-    console.log(`${socket.user.email} konuşmadan ayrıldı: ${conversationId}`)
+    logger.info(`${socket.user.email} konuşmadan ayrıldı: ${conversationId}`)
   })
 
   socket.on('message:read', async ({ conversationId }) => {
@@ -40,7 +41,7 @@ const messageHandler = (io, socket) => {
         userId: socket.user.id,
       })
     } catch (err) {
-      console.error('message:read hatası:', err)
+      logger.error('message:read hatası', { err })
     }
   })
 }

@@ -15,4 +15,9 @@ const getActivePolls = async () => {
   return response.data
 }
 
-export default { getStats, getRecentNews, getActivePolls }
+const getFeed = async () => {
+  const response = await api.get('/dashboard/feed')
+  return response.data
+}
+
+export default { getStats, getRecentNews, getActivePolls, getFeed }

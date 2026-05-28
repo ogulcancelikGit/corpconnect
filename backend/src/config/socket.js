@@ -1,6 +1,7 @@
 const { Server } = require('socket.io')
 const { verifyAccessToken } = require('../utils/jwt.util')
 const prisma = require('./database')
+const logger = require('../utils/logger')
 
 let io
 
@@ -47,7 +48,7 @@ const initSocket = (server) => {
   const { initHandlers } = require('../socket/index')
   initHandlers(io)
 
-  console.log('Socket.IO başlatıldı')
+  logger.info('Socket.IO başlatıldı')
   return io
 }
 

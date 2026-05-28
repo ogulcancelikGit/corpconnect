@@ -1,3 +1,4 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
@@ -9,9 +10,11 @@ const getConversations = async (req, res) => {
     const { page = 1, limit = 20 } = req.query
     const { take, skip } = getPagination(page, limit)
 
+    const showArchived = req.query.archived === 'true'
     const where = {
       deletedAt: null,
       members: { some: { userId: req.user.id } },
+      archivedAt: showArchived ? { not: null } : null,
     }
 
     const [conversations, total] = await Promise.all([
@@ -61,7 +64,7 @@ const getConversations = async (req, res) => {
 
     return paginated(res, conversations, getPaginationMeta(total, page, limit), 'Konuşmalar getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Konuşmalar getirilemedi', 500)
   }
 }
@@ -109,7 +112,7 @@ const getConversationById = async (req, res) => {
 
     return success(res, conversation, 'Konuşma getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Konuşma getirilemedi', 500)
   }
 }
@@ -179,7 +182,7 @@ const createConversation = async (req, res) => {
 
     return success(res, conversation, 'Konuşma oluşturuldu', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Konuşma oluşturulamadı', 500)
   }
 }
@@ -206,7 +209,7 @@ const updateConversation = async (req, res) => {
 
     return success(res, conversation, 'Konuşma güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Konuşma güncellenemedi', 500)
   }
 }
@@ -230,7 +233,7 @@ const leaveConversation = async (req, res) => {
 
     return success(res, null, 'Konuşmadan ayrıldınız')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Konuşmadan ayrılınamadı', 500)
   }
 }
@@ -267,7 +270,7 @@ const getMembers = async (req, res) => {
 
     return success(res, members, 'Üyeler getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Üyeler getirilemedi', 500)
   }
 }
@@ -307,7 +310,7 @@ const addMember = async (req, res) => {
 
     return success(res, newMembers, 'Üyeler eklendi', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Üye eklenemedi', 500)
   }
 }
@@ -331,7 +334,7 @@ const removeMember = async (req, res) => {
 
     return success(res, null, 'Üye çıkarıldı')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Üye çıkarılamadı', 500)
   }
 }
@@ -357,8 +360,35 @@ const updateMemberRole = async (req, res) => {
 
     return success(res, member, 'Üye rolü güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Üye rolü güncellenemedi', 500)
+  }
+}
+
+// PATCH /api/conversations/:id/archive (toggle)
+const archiveConversation = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const conv = await prisma.conversation.findFirst({
+      where: { id: parseInt(id), deletedAt: null, members: { some: { userId: req.user.id } } },
+      select: { id: true, archivedAt: true },
+    })
+
+    if (!conv) {
+      return error(res, 'Konuşma bulunamadı', 404)
+    }
+
+    const isArchived = !!conv.archivedAt
+    await prisma.conversation.update({
+      where: { id: parseInt(id) },
+      data: { archivedAt: isArchived ? null : new Date() },
+    })
+
+    return success(res, null, isArchived ? 'Arşivden çıkarıldı' : 'Konuşma arşivlendi')
+  } catch (err) {
+    logger.error(err)
+    return error(res, 'İşlem başarısız', 500)
   }
 }
 
@@ -372,4 +402,5 @@ module.exports = {
   addMember,
   removeMember,
   updateMemberRole,
+  archiveConversation,
 }

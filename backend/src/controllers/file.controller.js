@@ -1,3 +1,4 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
@@ -24,7 +25,7 @@ const uploadFile = async (req, res) => {
 
     return success(res, file, 'Dosya yüklendi', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Dosya yüklenemedi', 500)
   }
 }
@@ -60,7 +61,7 @@ const getFiles = async (req, res) => {
 
     return paginated(res, files, getPaginationMeta(total, page, limit), 'Dosyalar getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Dosyalar getirilemedi', 500)
   }
 }
@@ -80,7 +81,7 @@ const getFileById = async (req, res) => {
 
     return success(res, file, 'Dosya getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Dosya getirilemedi', 500)
   }
 }
@@ -106,7 +107,7 @@ const downloadFile = async (req, res) => {
 
     res.download(filePath, file.originalName)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Dosya indirilemedi', 500)
   }
 }
@@ -135,7 +136,7 @@ const deleteFile = async (req, res) => {
 
     return success(res, null, 'Dosya silindi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Dosya silinemedi', 500)
   }
 }

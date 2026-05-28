@@ -1,6 +1,9 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
+const { notifyAll } = require('../utils/notification.util')
+const { log } = require('../utils/activityLog.util')
 
 // GET /api/news
 const getNews = async (req, res) => {
@@ -41,14 +44,24 @@ const getNews = async (req, res) => {
               lastName: true,
             },
           },
+          views: {
+            where: { userId: req.user.id },
+            select: { id: true },
+            take: 1,
+          },
         },
       }),
       prisma.news.count({ where }),
     ])
 
-    return paginated(res, news, getPaginationMeta(total, page, limit), 'Haberler getirildi')
+    const enriched = news.map(({ views, ...rest }) => ({
+      ...rest,
+      isViewed: views.length > 0,
+    }))
+
+    return paginated(res, enriched, getPaginationMeta(total, page, limit), 'Haberler getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Haberler getirilemedi', 500)
   }
 }
@@ -79,6 +92,7 @@ const getNewsById = async (req, res) => {
             },
           },
         },
+        _count: { select: { views: true } },
       },
     })
 
@@ -86,15 +100,40 @@ const getNewsById = async (req, res) => {
       return error(res, 'Haber bulunamadı', 404)
     }
 
-    await prisma.news.update({
-      where: { id: parseInt(id) },
-      data: { viewCount: { increment: 1 } },
+    return success(res, news, 'Haber getirildi')
+  } catch (err) {
+    logger.error(err)
+    return error(res, 'Haber getirilemedi', 500)
+  }
+}
+
+// POST /api/news/:id/view  — per-user idempotent view tracking
+const markAsViewed = async (req, res) => {
+  try {
+    const newsId = parseInt(req.params.id)
+    const userId = req.user.id
+
+    const existing = await prisma.newsView.findUnique({
+      where: { userId_newsId: { userId, newsId } },
+      select: { id: true },
     })
 
-    return success(res, { ...news, viewCount: news.viewCount + 1 }, 'Haber getirildi')
+    if (existing) {
+      return success(res, { counted: false }, 'Daha önce görüntülendi')
+    }
+
+    await prisma.$transaction([
+      prisma.newsView.create({ data: { userId, newsId } }),
+      prisma.news.update({
+        where: { id: newsId },
+        data: { viewCount: { increment: 1 } },
+      }),
+    ])
+
+    return success(res, { counted: true }, 'Görüntülenme kaydedildi')
   } catch (err) {
-    console.error(err)
-    return error(res, 'Haber getirilemedi', 500)
+    logger.error(err)
+    return error(res, 'Görüntülenme kaydedilemedi', 500)
   }
 }
 
@@ -129,9 +168,19 @@ const createNews = async (req, res) => {
       },
     })
 
+    notifyAll({
+      title: 'Yeni Duyuru',
+      body: news.title,
+      type: 'NEWS',
+      link: `/news/${news.id}`,
+      excludeUserId: req.user.id,
+    }).catch((e) => logger.error('Haber bildirimi gönderilemedi', { e }))
+
+    log({ userId: req.user.id, action: 'NEWS_CREATE', entity: 'News', entityId: news.id, detail: news.title, ip: req.ip })
+
     return success(res, news, 'Haber oluşturuldu', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Haber oluşturulamadı', 500)
   }
 }
@@ -176,7 +225,7 @@ const updateNews = async (req, res) => {
 
     return success(res, news, 'Haber güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Haber güncellenemedi', 500)
   }
 }
@@ -205,7 +254,7 @@ const deleteNews = async (req, res) => {
 
     return success(res, null, 'Haber silindi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Haber silinemedi', 500)
   }
 }
@@ -231,9 +280,9 @@ const togglePin = async (req, res) => {
 
     return success(res, news, news.isPinned ? 'Haber pinlendi' : 'Haber pin kaldırıldı')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Pin işlemi yapılamadı', 500)
   }
 }
 
-module.exports = { getNews, getNewsById, createNews, updateNews, deleteNews, togglePin }
+module.exports = { getNews, getNewsById, createNews, updateNews, deleteNews, togglePin, markAsViewed }

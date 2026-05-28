@@ -1,7 +1,10 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
 const { getIO } = require('../config/socket')
+const { notifyAll } = require('../utils/notification.util')
+const { log } = require('../utils/activityLog.util')
 
 // GET /api/polls
 const getPolls = async (req, res) => {
@@ -61,7 +64,7 @@ const getPolls = async (req, res) => {
 
     return paginated(res, pollsWithStatus, getPaginationMeta(total, page, limit), 'Anketler getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Anketler getirilemedi', 500)
   }
 }
@@ -108,7 +111,7 @@ const getPollById = async (req, res) => {
       votes: undefined,
     }, 'Anket getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Anket getirilemedi', 500)
   }
 }
@@ -145,9 +148,19 @@ const createPoll = async (req, res) => {
       },
     })
 
+    notifyAll({
+      title: 'Yeni Anket',
+      body: poll.question,
+      type: 'POLL',
+      link: `/polls`,
+      excludeUserId: req.user.id,
+    }).catch((e) => logger.error('Anket bildirimi gönderilemedi', { e }))
+
+    log({ userId: req.user.id, action: 'POLL_CREATE', entity: 'Poll', entityId: poll.id, detail: poll.question, ip: req.ip })
+
     return success(res, poll, 'Anket oluşturuldu', 201)
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Anket oluşturulamadı', 500)
   }
 }
@@ -193,7 +206,7 @@ const updatePoll = async (req, res) => {
 
     return success(res, poll, 'Anket güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Anket güncellenemedi', 500)
   }
 }
@@ -222,7 +235,7 @@ const deletePoll = async (req, res) => {
 
     return success(res, null, 'Anket silindi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Anket silinemedi', 500)
   }
 }
@@ -297,7 +310,7 @@ const votePoll = async (req, res) => {
 
     return success(res, updatedPoll, 'Oyunuz kaydedildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Oy verilemedi', 500)
   }
 }
@@ -334,7 +347,7 @@ const getPollResults = async (req, res) => {
 
     return success(res, { ...poll, options: results }, 'Anket sonuçları getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Anket sonuçları getirilemedi', 500)
   }
 }
@@ -351,7 +364,7 @@ const getMyVote = async (req, res) => {
 
     return success(res, { hasVoted: !!vote, optionId: vote?.optionId || null }, 'Oy bilgisi getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Oy bilgisi getirilemedi', 500)
   }
 }

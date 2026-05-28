@@ -10,6 +10,11 @@ const getTrainingById = async (id) => {
   return response.data
 }
 
+const markAsViewed = async (id) => {
+  const response = await api.post(`/training/${id}/view`)
+  return response.data
+}
+
 const createTraining = async (data) => {
   const response = await api.post('/training', data)
   return response.data
@@ -30,4 +35,4 @@ const getCategories = async () => {
   return response.data
 }
 
-export default { getTrainings, getTrainingById, createTraining, updateTraining, deleteTraining, getCategories }
+export default { getTrainings, getTrainingById, markAsViewed, createTraining, updateTraining, deleteTraining, getCategories }

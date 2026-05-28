@@ -1,6 +1,9 @@
+const logger = require('../utils/logger')
 const prisma = require('../config/database')
 const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
+const { log } = require('../utils/activityLog.util')
+const { hashPassword } = require('../utils/bcrypt.util')
 
 // GET /api/admin/users
 const getAdminUsers = async (req, res) => {
@@ -53,7 +56,7 @@ const getAdminUsers = async (req, res) => {
 
     return paginated(res, users, getPaginationMeta(total, page, limit), 'Kullanıcılar getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Kullanıcılar getirilemedi', 500)
   }
 }
@@ -122,7 +125,7 @@ const getAdminStats = async (req, res) => {
       },
     }, 'Sistem istatistikleri getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'İstatistikler getirilemedi', 500)
   }
 }
@@ -141,7 +144,7 @@ const getSettings = async (req, res) => {
 
     return success(res, settingsMap, 'Sistem ayarları getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Sistem ayarları getirilemedi', 500)
   }
 }
@@ -163,7 +166,7 @@ const updateSettings = async (req, res) => {
 
     return success(res, null, 'Sistem ayarları güncellendi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Sistem ayarları güncellenemedi', 500)
   }
 }
@@ -200,8 +203,108 @@ const getLogs = async (req, res) => {
 
     return paginated(res, logs, getPaginationMeta(total, page, limit), 'Loglar getirildi')
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     return error(res, 'Loglar getirilemedi', 500)
+  }
+}
+
+// PATCH /api/admin/users/:id/status
+const updateUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { isActive } = req.body
+
+    if (parseInt(id) === req.user.id) {
+      return error(res, 'Kendi hesabınızı devre dışı bırakamazsınız', 400)
+    }
+
+    const user = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: { isActive },
+      select: { id: true, firstName: true, lastName: true, isActive: true },
+    })
+
+    log({ userId: req.user.id, action: 'USER_STATUS_CHANGE', entity: 'User', entityId: parseInt(id), detail: `${user.firstName} ${user.lastName} ${isActive ? 'aktif edildi' : 'devre dışı bırakıldı'}`, ip: req.ip })
+
+    return success(res, user, `Kullanıcı ${isActive ? 'aktif edildi' : 'devre dışı bırakıldı'}`)
+  } catch (err) {
+    logger.error(err)
+    return error(res, 'İşlem gerçekleştirilemedi', 500)
+  }
+}
+
+// PATCH /api/admin/users/:id/role
+const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { role } = req.body
+
+    if (!['ADMIN', 'MANAGER', 'EMPLOYEE'].includes(role)) {
+      return error(res, 'Geçersiz rol', 400)
+    }
+
+    if (parseInt(id) === req.user.id) {
+      return error(res, 'Kendi rolünüzü değiştiremezsiniz', 400)
+    }
+
+    const user = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: { role },
+      select: { id: true, firstName: true, lastName: true, role: true },
+    })
+
+    log({ userId: req.user.id, action: 'USER_ROLE_CHANGE', entity: 'User', entityId: parseInt(id), detail: `${user.firstName} ${user.lastName} rolü ${role} yapıldı`, ip: req.ip })
+
+    return success(res, user, 'Rol güncellendi')
+  } catch (err) {
+    logger.error(err)
+    return error(res, 'Rol güncellenemedi', 500)
+  }
+}
+
+// POST /api/admin/users
+const createUser = async (req, res) => {
+  try {
+    const { email, password, firstName, lastName, role = 'EMPLOYEE', department, position, phone } = req.body
+
+    if (!email || !password || !firstName || !lastName) {
+      return error(res, 'E-posta, şifre, ad ve soyad zorunludur', 400)
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) return error(res, 'Bu e-posta adresi zaten kullanımda', 409)
+
+    const hashed = await hashPassword(password)
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashed,
+        firstName,
+        lastName,
+        role,
+        emailVerified: true,
+        profile: {
+          create: {
+            ...(department && { department }),
+            ...(position && { position }),
+            ...(phone && { phone }),
+          },
+        },
+      },
+      select: {
+        id: true, email: true, firstName: true, lastName: true,
+        role: true, isActive: true, createdAt: true,
+        profile: { select: { department: true, position: true } },
+      },
+    })
+
+    log({ userId: req.user.id, action: 'USER_CREATED', entity: 'User', entityId: user.id, detail: `${firstName} ${lastName} (${email}) oluşturuldu`, ip: req.ip })
+
+    return success(res, user, 'Kullanıcı oluşturuldu', 201)
+  } catch (err) {
+    logger.error(err)
+    return error(res, 'Kullanıcı oluşturulamadı', 500)
   }
 }
 
@@ -211,4 +314,7 @@ module.exports = {
   getSettings,
   updateSettings,
   getLogs,
+  updateUserStatus,
+  updateUserRole,
+  createUser,
 }

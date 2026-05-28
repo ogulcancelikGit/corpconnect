@@ -45,6 +45,11 @@ const updateMemberRole = async (id, userId, role) => {
   return response.data
 }
 
+const archiveConversation = async (id) => {
+  const response = await api.patch(`/conversations/${id}/archive`)
+  return response.data
+}
+
 export default {
   getConversations,
   getConversationById,
@@ -55,4 +60,5 @@ export default {
   addMember,
   removeMember,
   updateMemberRole,
+  archiveConversation,
 }

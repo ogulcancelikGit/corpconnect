@@ -25,4 +25,22 @@ const deleteNotification = async (id) => {
   return response.data
 }
 
-export default { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification }
+const getPreferences = async () => {
+  const response = await api.get('/notifications/preferences')
+  return response.data
+}
+
+const updatePreferences = async (preferences) => {
+  const response = await api.put('/notifications/preferences', preferences)
+  return response.data
+}
+
+export default {
+  getNotifications,
+  getUnreadCount,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+  getPreferences,
+  updatePreferences,
+}

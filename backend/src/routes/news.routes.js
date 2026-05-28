@@ -7,6 +7,7 @@ const {
   updateNews,
   deleteNews,
   togglePin,
+  markAsViewed,
 } = require('../controllers/news.controller')
 const { authenticate } = require('../middleware/auth.middleware')
 const { authorize } = require('../middleware/role.middleware')
@@ -15,6 +16,7 @@ const { createNewsValidation, updateNewsValidation } = require('../validations/n
 
 router.get('/', authenticate, getNews)
 router.get('/:id', authenticate, getNewsById)
+router.post('/:id/view', authenticate, markAsViewed)
 router.post('/', authenticate, authorize('ADMIN', 'MANAGER'), createNewsValidation, validate, createNews)
 router.put('/:id', authenticate, authorize('ADMIN', 'MANAGER'), updateNewsValidation, validate, updateNews)
 router.delete('/:id', authenticate, authorize('ADMIN', 'MANAGER'), deleteNews)

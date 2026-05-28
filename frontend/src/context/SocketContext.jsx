@@ -27,14 +27,6 @@ export const SocketProvider = ({ children }) => {
       transports: ['websocket'],
     })
 
-    newSocket.on('connect', () => {
-      console.log('Socket bağlandı')
-    })
-
-    newSocket.on('disconnect', () => {
-      console.log('Socket bağlantısı kesildi')
-    })
-
     newSocket.on('user:online', ({ userId }) => {
       setOnlineUsers((prev) => [...new Set([...prev, userId])])
     })

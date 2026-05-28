@@ -10,6 +10,7 @@ const {
   addMember,
   removeMember,
   updateMemberRole,
+  archiveConversation,
 } = require('../controllers/conversation.controller')
 const {
   getMessages,
@@ -17,6 +18,10 @@ const {
   updateMessage,
   deleteMessage,
   markAsRead,
+  searchMessages,
+  pinMessage,
+  getPinnedMessages,
+  forwardMessage,
 } = require('../controllers/message.controller')
 const { authenticate } = require('../middleware/auth.middleware')
 const { validate } = require('../middleware/validate.middleware')
@@ -40,10 +45,15 @@ router.post('/:id/members', authenticate, addMember)
 router.delete('/:id/members/:userId', authenticate, removeMember)
 router.patch('/:id/members/:userId/role', authenticate, updateMemberRole)
 
+router.patch('/:id/archive', authenticate, archiveConversation)
+router.get('/:id/pinned', authenticate, getPinnedMessages)
+router.get('/:id/messages/search', authenticate, searchMessages)
 router.get('/:id/messages', authenticate, getMessages)
+router.post('/:id/messages/forward', authenticate, forwardMessage)
 router.post('/:id/messages', authenticate, sendMessageValidation, validate, sendMessage)
 router.put('/:id/messages/:msgId', authenticate, updateMessageValidation, validate, updateMessage)
 router.delete('/:id/messages/:msgId', authenticate, deleteMessage)
+router.patch('/:id/messages/:msgId/pin', authenticate, pinMessage)
 router.patch('/:id/read', authenticate, markAsRead)
 
 module.exports = router

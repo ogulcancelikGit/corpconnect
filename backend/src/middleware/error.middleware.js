@@ -1,7 +1,8 @@
 const { error } = require('../utils/response.util')
+const logger = require('../utils/logger')
 
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack)
+  logger.error(err.stack)
 
   if (err.name === 'PrismaClientKnownRequestError') {
     if (err.code === 'P2002') {
@@ -23,9 +24,10 @@ const errorHandler = (err, req, res, next) => {
     return error(res, err.message, 400)
   }
 
+  const isProd = process.env.NODE_ENV === 'production'
   return error(
     res,
-    err.message || 'Sunucu hatası',
+    isProd ? 'Sunucu hatası' : (err.message || 'Sunucu hatası'),
     err.statusCode || 500
   )
 }

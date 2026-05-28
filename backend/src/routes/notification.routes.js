@@ -6,13 +6,18 @@ const {
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  getPreferences,
+  updatePreferences,
 } = require('../controllers/notification.controller')
 const { authenticate } = require('../middleware/auth.middleware')
 
-router.get('/', authenticate, getNotifications)
-router.get('/unread-count', authenticate, getUnreadCount)
-router.patch('/read-all', authenticate, markAllAsRead)
-router.patch('/:id/read', authenticate, markAsRead)
-router.delete('/:id', authenticate, deleteNotification)
+router.use(authenticate)
+router.get('/', getNotifications)
+router.get('/unread-count', getUnreadCount)
+router.get('/preferences', getPreferences)
+router.put('/preferences', updatePreferences)
+router.patch('/read-all', markAllAsRead)
+router.patch('/:id/read', markAsRead)
+router.delete('/:id', deleteNotification)
 
 module.exports = router

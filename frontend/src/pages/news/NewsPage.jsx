@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { Newspaper, Pin, Plus, Eye, Trash2, Search } from 'lucide-react'
 import newsService from '../../services/news.service'
 import { useAuth } from '../../context/AuthContext'
-import { formatDate } from '../../utils/dateFormat'
+import { formatTimeAgo } from '../../utils/dateFormat'
 import toast from 'react-hot-toast'
 import useDebounce from '../../hooks/useDebounce'
+import PageHeader from '../../components/common/PageHeader'
+import SkeletonCard from '../../components/common/SkeletonCard'
+import EmptyState from '../../components/common/EmptyState'
+import StatusPill from '../../components/common/StatusPill'
+import Pagination from '../../components/common/Pagination'
+
+const CATEGORIES = ['Duyuru', 'Etkinlik', 'Politika', 'Eğitim']
 
 const NewsPage = () => {
   const [news, setNews] = useState([])
@@ -21,6 +29,7 @@ const NewsPage = () => {
 
   useEffect(() => {
     fetchNews()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, category, page])
 
   const fetchNews = async () => {
@@ -82,44 +91,45 @@ const NewsPage = () => {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">News & Announcements</h1>
-        {hasRole('ADMIN', 'MANAGER') && (
+    <div className="space-y-6 pb-12">
+      <PageHeader
+        title="Haberler"
+        description="Şirket içi duyurular ve güncellemeler"
+        actions={hasRole('ADMIN', 'MANAGER') && (
           <button
             onClick={() => setShowForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
           >
-            + New Post
+            <Plus size={14} strokeWidth={2} /> Yeni Haber
           </button>
         )}
-      </div>
+      />
 
-      <div className="flex gap-3 mb-6">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          placeholder="Search announcements..."
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search size={14} strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            placeholder="Haberlerde ara..."
+            className="w-full border border-gray-200 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-gray-400 transition-colors"
+          />
+        </div>
         <select
           value={category}
           onChange={(e) => { setCategory(e.target.value); setPage(1) }}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400 transition-colors"
         >
-          <option value="">All Categories</option>
-          <option value="Duyuru">Duyuru</option>
-          <option value="Etkinlik">Etkinlik</option>
-          <option value="Politika">Politika</option>
-          <option value="Eğitim">Eğitim</option>
+          <option value="">Tüm Kategoriler</option>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
-            <h2 className="text-lg font-semibold mb-4">Yeni Haber</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900">Yeni Haber</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">Başlık</label>
@@ -127,7 +137,7 @@ const NewsPage = () => {
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                   placeholder="Haber başlığı..."
                 />
               </div>
@@ -137,7 +147,7 @@ const NewsPage = () => {
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
                   rows={5}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                   placeholder="Haber içeriği..."
                 />
               </div>
@@ -146,37 +156,33 @@ const NewsPage = () => {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                 >
                   <option value="">Kategori seç</option>
-                  <option value="Duyuru">Duyuru</option>
-                  <option value="Etkinlik">Etkinlik</option>
-                  <option value="Politika">Politika</option>
-                  <option value="Eğitim">Eğitim</option>
+                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                 <input
                   type="checkbox"
-                  id="isPinned"
                   checked={form.isPinned}
                   onChange={(e) => setForm({ ...form, isPinned: e.target.checked })}
                   className="rounded"
                 />
-                <label htmlFor="isPinned" className="text-sm text-gray-600">Pinle</label>
-              </div>
+                Sabitle
+              </label>
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 bg-gray-900 text-white rounded-md py-2 text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
                   {formLoading ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 border border-gray-300 rounded-lg py-2 text-sm hover:bg-gray-50"
+                  className="flex-1 border border-gray-200 rounded-md py-2 text-sm hover:bg-gray-50 transition-colors"
                 >
                   İptal
                 </button>
@@ -187,77 +193,73 @@ const NewsPage = () => {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} variant="card" />)}
         </div>
       ) : news.length === 0 ? (
-        <div className="text-center text-gray-400 py-12">Haber bulunamadı</div>
+        <div className="bg-white border border-gray-200 rounded-lg">
+          <EmptyState
+            icon={Newspaper}
+            title="Henüz haber yok"
+            description="Yeni duyurular burada görünecek."
+          />
+        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {news.map((item) => (
-            <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
+            <article key={item.id} className="group bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 transition-colors flex flex-col">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {item.isPinned && (
-                    <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">📌 Pinned</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">
+                      <Pin size={10} strokeWidth={2.5} /> Sabit
+                    </span>
                   )}
                   {item.category && (
-                    <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">{item.category}</span>
+                    <StatusPill label={item.category} />
+                  )}
+                  {!item.isViewed && (
+                    <StatusPill label="Yeni" tone="green" />
                   )}
                 </div>
                 {hasRole('ADMIN', 'MANAGER') && (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2 text-gray-400">
                     <button
                       onClick={() => handlePin(item.id)}
-                      className="text-gray-400 hover:text-orange-500 text-xs"
+                      className="hover:text-orange-500 transition-colors"
+                      title={item.isPinned ? 'Sabitlemeyi kaldır' : 'Sabitle'}
                     >
-                      {item.isPinned ? 'Unpin' : 'Pin'}
+                      <Pin size={13} strokeWidth={1.75} />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-gray-400 hover:text-red-500 text-xs"
+                      className="hover:text-red-500 transition-colors"
+                      title="Sil"
                     >
-                      Sil
+                      <Trash2 size={13} strokeWidth={1.75} />
                     </button>
                   </div>
                 )}
               </div>
-              <Link to={`/news/${item.id}`}>
-                <h3 className="font-semibold text-gray-800 hover:text-blue-600 transition-colors mb-1">
+
+              <Link to={`/news/${item.id}`} className="block">
+                <h3 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-gray-700 transition-colors">
                   {item.title}
                 </h3>
               </Link>
-              <p className="text-sm text-gray-500 line-clamp-2 mb-3">{item.content}</p>
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>{formatDate(item.createdAt)}</span>
-                <span>👁 {item.viewCount} views</span>
+              <p className="text-sm text-gray-500 line-clamp-2 mt-2 flex-1">{item.content}</p>
+              <div className="flex items-center justify-between text-xs text-gray-400 mt-4 pt-3 border-t border-gray-100">
+                <span>{formatTimeAgo(item.createdAt)}</span>
+                <span className="inline-flex items-center gap-1">
+                  <Eye size={11} strokeWidth={1.75} /> {item.viewCount}
+                </span>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={!pagination.hasPrev}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-50"
-          >
-            Önceki
-          </button>
-          <span className="text-sm text-gray-500">
-            {pagination.page} / {pagination.totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!pagination.hasNext}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-50"
-          >
-            Sonraki
-          </button>
-        </div>
-      )}
+      <Pagination pagination={pagination} onPageChange={setPage} />
     </div>
   )
 }

@@ -1,28 +1,41 @@
 import api from './api.service'
 
-const getMessages = async (conversationId, params) => {
-  const response = await api.get(`/conversations/${conversationId}/messages`, { params })
-  return response.data
+const getMessages = (conversationId, params) =>
+  api.get(`/conversations/${conversationId}/messages`, { params }).then((r) => r.data)
+
+const sendMessage = (conversationId, data) =>
+  api.post(`/conversations/${conversationId}/messages`, data).then((r) => r.data)
+
+const updateMessage = (conversationId, msgId, content) =>
+  api.put(`/conversations/${conversationId}/messages/${msgId}`, { content }).then((r) => r.data)
+
+const deleteMessage = (conversationId, msgId) =>
+  api.delete(`/conversations/${conversationId}/messages/${msgId}`).then((r) => r.data)
+
+const markAsRead = (conversationId) =>
+  api.patch(`/conversations/${conversationId}/read`).then((r) => r.data)
+
+const uploadFile = (file) => {
+  const form = new FormData()
+  form.append('file', file)
+  return api.post('/files/upload', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then((r) => r.data)
 }
 
-const sendMessage = async (conversationId, data) => {
-  const response = await api.post(`/conversations/${conversationId}/messages`, data)
-  return response.data
-}
+const toggleReaction = (conversationId, msgId, emoji) =>
+  api.post(`/conversations/${conversationId}/messages/${msgId}/reactions`, { emoji }).then((r) => r.data)
 
-const updateMessage = async (conversationId, msgId, content) => {
-  const response = await api.put(`/conversations/${conversationId}/messages/${msgId}`, { content })
-  return response.data
-}
+const searchMessages = (conversationId, q) =>
+  api.get(`/conversations/${conversationId}/messages/search`, { params: { q } }).then((r) => r.data)
 
-const deleteMessage = async (conversationId, msgId) => {
-  const response = await api.delete(`/conversations/${conversationId}/messages/${msgId}`)
-  return response.data
-}
+const pinMessage = (conversationId, msgId) =>
+  api.patch(`/conversations/${conversationId}/messages/${msgId}/pin`).then((r) => r.data)
 
-const markAsRead = async (conversationId) => {
-  const response = await api.patch(`/conversations/${conversationId}/read`)
-  return response.data
-}
+const getPinnedMessages = (conversationId) =>
+  api.get(`/conversations/${conversationId}/pinned`).then((r) => r.data)
 
-export default { getMessages, sendMessage, updateMessage, deleteMessage, markAsRead }
+const forwardMessage = (targetConvId, messageId) =>
+  api.post(`/conversations/${targetConvId}/messages/forward`, { messageId }).then((r) => r.data)
+
+export default { getMessages, sendMessage, updateMessage, deleteMessage, markAsRead, uploadFile, toggleReaction, searchMessages, pinMessage, getPinnedMessages, forwardMessage }
