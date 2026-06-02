@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 
 const generateAccessToken = (user) => {
   return jwt.sign(
@@ -9,8 +10,11 @@ const generateAccessToken = (user) => {
 }
 
 const generateRefreshToken = (user) => {
+  // jti: aynı kullanıcının aynı saniyede birden fazla login olması durumunda
+  // birebir aynı token string'inin üretilip unique constraint'i (P2002) ihlal
+  // etmesini önler.
   return jwt.sign(
-    { userId: user.id },
+    { userId: user.id, jti: crypto.randomUUID() },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
   )
