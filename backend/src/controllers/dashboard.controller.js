@@ -141,7 +141,8 @@ const getFeed = async (req, res) => {
       prisma.userProfile.findMany({
         where: {
           OR: [{ birthDate: { not: null } }, { hireDate: { not: null } }],
-          user: { isActive: true, deletedAt: null },
+          // ADMIN sistem hesabıdır, çalışan değildir — kutlamalara dahil edilmez
+          user: { isActive: true, deletedAt: null, role: { not: 'ADMIN' } },
         },
         select: {
           userId: true,

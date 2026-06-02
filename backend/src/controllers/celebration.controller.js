@@ -10,7 +10,8 @@ const getTodayCelebrations = async (req, res) => {
     const day = today.getDate()
 
     const users = await prisma.user.findMany({
-      where: { isActive: true, deletedAt: null },
+      // ADMIN sistem hesabıdır, çalışan değildir — kutlamalara dahil edilmez
+      where: { isActive: true, deletedAt: null, role: { not: 'ADMIN' } },
       select: {
         id: true,
         firstName: true,
@@ -77,7 +78,8 @@ const getUpcomingCelebrations = async (req, res) => {
     const today = new Date()
 
     const users = await prisma.user.findMany({
-      where: { isActive: true, deletedAt: null },
+      // ADMIN sistem hesabıdır, çalışan değildir — kutlamalara dahil edilmez
+      where: { isActive: true, deletedAt: null, role: { not: 'ADMIN' } },
       select: {
         id: true,
         firstName: true,

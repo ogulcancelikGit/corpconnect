@@ -14,9 +14,9 @@ const updateProfileValidation = [
     .withMessage('Soyad en az 2, en fazla 50 karakter olmalı')
     .escape(),
   body('phone')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
-    .isMobilePhone()
+    .isMobilePhone('any')
     .withMessage('Geçerli bir telefon numarası girin'),
   body('department')
     .optional()

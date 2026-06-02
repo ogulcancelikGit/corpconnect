@@ -72,8 +72,8 @@ const ProfilePage = () => {
       const res = await userService.updateMe(data)
       updateUser(res.data)
       toast.success('Profil güncellendi')
-    } catch {
-      toast.error('Profil güncellenemedi')
+    } catch (err) {
+      toast.error(err?.response?.data?.errors?.[0]?.message || err?.response?.data?.message || 'Profil güncellenemedi')
     }
   }
 
