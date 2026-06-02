@@ -71,6 +71,7 @@ import SuggestionsPage from './pages/suggestions/SuggestionsPage'
 import CelebrationPage from './pages/celebrations/CelebrationPage'
 import SuggestionsAdminPage from './pages/admin/superadmin/SuggestionsAdminPage'
 import NotFoundPage from './pages/NotFoundPage'
+import MaintenanceGate from './components/MaintenanceGate'
 
 const ProtectedRoute = ({ children, roles }) => {
   const { isAuthenticated, user, loading } = useAuth()
@@ -133,7 +134,9 @@ const AppRoutes = () => {
       {/* Normal kullanıcı layout — MANAGER ve EMPLOYEE */}
       <Route path="/" element={
         <ProtectedRoute roles={['MANAGER', 'EMPLOYEE']}>
-          <Layout />
+          <MaintenanceGate>
+            <Layout />
+          </MaintenanceGate>
         </ProtectedRoute>
       }>
         <Route index element={<DashboardPage />} />

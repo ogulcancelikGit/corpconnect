@@ -12,6 +12,7 @@ const path = require('path')
 const logger = require('./utils/logger')
 const celebrationJob = require('./jobs/celebrationJob')
 const taskReminderJob = require('./jobs/taskReminderJob')
+const { loadMaintenanceMode } = require('./middleware/maintenance.middleware')
 
 dotenv.config()
 
@@ -37,20 +38,25 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
-app.use('/api', routes)
-
+// Health, /api router'ından önce — bakım modunda da erişilebilir kalsın
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server çalışıyor', timestamp: new Date() })
 })
+
+app.use('/api', routes)
 
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
 
-server.listen(PORT, () => {
-  logger.info(`Server ${PORT} portunda çalışıyor — ortam: ${process.env.NODE_ENV || 'development'}`)
-  celebrationJob.start()
-  taskReminderJob.start()
-})
+// Yalnızca doğrudan çalıştırıldığında dinle (test'te require edilince port/cron tetiklenmesin)
+if (require.main === module) {
+  server.listen(PORT, () => {
+    logger.info(`Server ${PORT} portunda çalışıyor — ortam: ${process.env.NODE_ENV || 'development'}`)
+    loadMaintenanceMode()
+    celebrationJob.start()
+    taskReminderJob.start()
+  })
+}
 
 module.exports = { app, server }

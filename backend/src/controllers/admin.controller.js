@@ -4,6 +4,7 @@ const { success, error, paginated } = require('../utils/response.util')
 const { getPagination, getPaginationMeta } = require('../utils/pagination.util')
 const { log } = require('../utils/activityLog.util')
 const { hashPassword } = require('../utils/bcrypt.util')
+const { setMaintenanceMode } = require('../middleware/maintenance.middleware')
 
 // GET /api/admin/users
 const getAdminUsers = async (req, res) => {
@@ -163,6 +164,11 @@ const updateSettings = async (req, res) => {
         })
       )
     )
+
+    // Bakım modu değiştiyse bellekteki bayrağı anında güncelle
+    if (Object.prototype.hasOwnProperty.call(settings, 'maintenance_mode')) {
+      setMaintenanceMode(settings.maintenance_mode)
+    }
 
     return success(res, null, 'Sistem ayarları güncellendi')
   } catch (err) {

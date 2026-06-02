@@ -23,8 +23,19 @@ const suggestionRoutes = require('./suggestion.routes')
 const celebrationRoutes = require('./celebration.routes')
 const reactionRoutes = require('./reaction.routes')
 const activityRoutes = require('./activity.routes')
+const { maintenanceGuard, isMaintenanceMode } = require('../middleware/maintenance.middleware')
 
+// Public bakım durumu — frontend kapısı bunu sorgular (guard'dan muaf)
+router.get('/maintenance', (req, res) =>
+  res.json({ success: true, data: { maintenance: isMaintenanceMode() } })
+)
+
+// Auth guard'dan ÖNCE: bakım modunda da giriş yapılabilmeli (özellikle ADMIN)
 router.use('/auth', authRoutes)
+
+// Bu noktadan sonrası bakım modunda yalnızca ADMIN'e açık
+router.use(maintenanceGuard)
+
 router.use('/users', userRoutes)
 router.use('/dashboard', dashboardRoutes)
 router.use('/news', newsRoutes)

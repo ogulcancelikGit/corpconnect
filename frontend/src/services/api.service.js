@@ -39,6 +39,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    // Bakım modu — backend 503 + maintenance bayrağı dönerse kapıyı tetikle
+    if (error.response?.status === 503 && error.response?.data?.maintenance) {
+      window.dispatchEvent(new CustomEvent('app:maintenance'))
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/login')) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
