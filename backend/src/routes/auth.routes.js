@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const {
-  register,
   login,
   logout,
   refresh,
@@ -13,7 +12,6 @@ const {
 const { authenticate } = require('../middleware/auth.middleware')
 const { validate } = require('../middleware/validate.middleware')
 const {
-  registerValidation,
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
@@ -28,7 +26,6 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 })
 
-router.post('/register', authLimiter, registerValidation, validate, register)
 router.post('/login', authLimiter, loginValidation, validate, login)
 router.post('/logout', authenticate, logout)
 router.post('/refresh', refresh)

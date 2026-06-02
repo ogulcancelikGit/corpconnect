@@ -9,23 +9,6 @@ export const loginSchema = z.object({
   password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır'),
 })
 
-export const registerSchema = z
-  .object({
-    firstName: z.string().trim().min(2, 'Ad en az 2 karakter olmalıdır'),
-    lastName: z.string().trim().min(2, 'Soyad en az 2 karakter olmalıdır'),
-    email: z
-      .string()
-      .trim()
-      .min(1, 'E-posta zorunludur')
-      .email('Geçerli bir e-posta girin'),
-    password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır'),
-    confirmPassword: z.string().min(1, 'Şifre tekrarı zorunludur'),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Şifreler eşleşmiyor',
-    path: ['confirmPassword'],
-  })
-
 export const forgotPasswordSchema = z.object({
   email: z
     .string()
@@ -36,7 +19,10 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır'),
+    password: z
+      .string()
+      .min(8, 'Şifre en az 8 karakter olmalıdır')
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermeli'),
     confirm: z.string().min(1, 'Şifre tekrarı zorunludur'),
   })
   .refine((d) => d.password === d.confirm, {

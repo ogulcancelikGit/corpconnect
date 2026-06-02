@@ -4,55 +4,8 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 const { success, error } = require('../utils/response.util')
 const { log } = require('../utils/activityLog.util')
 const logger = require('../utils/logger.util')
+const { sendPasswordResetEmail } = require('../utils/mailer.util')
 const crypto = require('crypto')
-
-// POST /api/auth/register
-const register = async (req, res) => {
-  try {
-    const { email, password, firstName, lastName } = req.body
-
-    const existingUser = await prisma.user.findUnique({ where: { email } })
-    if (existingUser) {
-      return error(res, 'Bu email adresi zaten kullanımda', 409)
-    }
-
-    const hashedPassword = await hashPassword(password)
-
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        profile: { create: {} },
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        createdAt: true,
-      },
-    })
-
-    const accessToken = generateAccessToken(user)
-    const refreshToken = generateRefreshToken(user)
-
-    await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        token: refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    })
-
-    return success(res, { user, accessToken, refreshToken }, 'Kayıt başarılı', 201)
-  } catch (err) {
-    logger.error(err)
-    return error(res, 'Kayıt sırasında hata oluştu', 500)
-  }
-}
 
 // POST /api/auth/login
 const login = async (req, res) => {
@@ -230,7 +183,15 @@ const forgotPassword = async (req, res) => {
       data: { userId: user.id, token, expiresAt },
     })
 
-    logger.debug(`Şifre sıfırlama token: ${token}`)
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    const resetUrl = `${clientUrl}/reset-password?token=${token}`
+
+    try {
+      await sendPasswordResetEmail(user.email, resetUrl, user.firstName)
+    } catch (mailErr) {
+      // Mail gönderilemezse akışı bozma; yanıt yine de nötr kalır (e-posta sızdırmamak için).
+      logger.error('Şifre sıfırlama maili gönderilemedi', { mailErr })
+    }
 
     return success(res, null, 'Şifre sıfırlama maili gönderildi')
   } catch (err) {
@@ -312,7 +273,6 @@ const changePassword = async (req, res) => {
 }
 
 module.exports = {
-  register,
   login,
   logout,
   refresh,

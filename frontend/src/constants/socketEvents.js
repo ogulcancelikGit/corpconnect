@@ -3,6 +3,7 @@ export const SOCKET_EVENTS = {
   CONNECT: 'connect',
   DISCONNECT: 'disconnect',
   USER_ONLINE: 'user:online',
+  USER_ONLINE_LIST: 'user:online:list',
   USER_OFFLINE: 'user:offline',
 
   // Konuşma

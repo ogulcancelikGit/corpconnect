@@ -16,7 +16,7 @@ export const NotificationProvider = ({ children }) => {
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/notifications/unread-count`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications/unread-count`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('corpconnect_access_token')}`,

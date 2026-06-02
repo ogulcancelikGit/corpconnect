@@ -68,8 +68,12 @@ const getAllSuggestions = async (req, res) => {
         skip,
         include: {
           user: {
-            select: { id: true, firstName: true, lastName: true },
-            include: { profile: { select: { department: true, position: true } } },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              profile: { select: { department: true, position: true } },
+            },
           },
         },
       }),

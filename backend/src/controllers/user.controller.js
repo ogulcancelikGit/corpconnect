@@ -187,23 +187,24 @@ const getUsers = async (req, res) => {
 const searchUsers = async (req, res) => {
   try {
     const { q } = req.query
-
-    if (!q || q.length < 2) {
-      return error(res, 'En az 2 karakter girin', 400)
-    }
+    const trimmed = (q || '').trim()
 
     const users = await prisma.user.findMany({
       where: {
         deletedAt: null,
         isActive: true,
+        role: { not: 'ADMIN' },
         id: { not: req.user.id },
-        OR: [
-          { firstName: { contains: q } },
-          { lastName: { contains: q } },
-          { email: { contains: q } },
-        ],
+        ...(trimmed.length >= 1 && {
+          OR: [
+            { firstName: { contains: trimmed } },
+            { lastName: { contains: trimmed } },
+            { email: { contains: trimmed } },
+          ],
+        }),
       },
-      take: 10,
+      take: trimmed ? 20 : 100,
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
       select: {
         id: true,
         firstName: true,

@@ -111,22 +111,6 @@ const LoginPage = () => {
               )}
             </button>
           </form>
-
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-100" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-400">veya</span>
-            </div>
-          </div>
-
-          <Link
-            to="/register"
-            className="w-full flex items-center justify-center border border-gray-200 rounded-md py-2.5 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            Yeni hesap oluştur
-          </Link>
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">

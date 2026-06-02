@@ -108,6 +108,7 @@ enum TaskPriority {
 enum TaskStatus {
   TODO
   IN_PROGRESS
+  REVIEW
   DONE
   CANCELLED
 }
@@ -163,6 +164,7 @@ model User {
   activityLogs         ActivityLog[]
   createdTasks         Task[]               @relation("CreatedTasks")
   assignedTasks        Task[]               @relation("AssignedTasks")
+  taskComments         TaskComment[]
   expenses             Expense[]            @relation("UserExpenses")
   reviewedExpenses     Expense[]            @relation("ReviewedExpenses")
   createdEvents        CalendarEvent[]      @relation("CreatedEvents")
@@ -596,13 +598,72 @@ model Task {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  creator  User  @relation("CreatedTasks", fields: [createdBy], references: [id], onDelete: Cascade)
-  assignee User? @relation("AssignedTasks", fields: [assignedTo], references: [id])
+  creator   User  @relation("CreatedTasks", fields: [createdBy], references: [id], onDelete: Cascade)
+  assignee  User? @relation("AssignedTasks", fields: [assignedTo], references: [id])
+  comments  TaskComment[]
+  checklist TaskChecklistItem[]
+  labels    TaskLabel[]
 
   @@index([createdBy])
   @@index([assignedTo])
   @@index([status])
+  @@index([dueDate])
   @@map("tasks")
+}
+
+model TaskChecklistItem {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  text      String   @db.VarChar(500)
+  isDone    Boolean  @default(false)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("task_checklist_items")
+}
+
+model Label {
+  id        Int         @id @default(autoincrement())
+  name      String      @unique @db.VarChar(50)
+  color     String      @default("#6b7280") @db.VarChar(7)
+  createdAt DateTime    @default(now())
+
+  tasks TaskLabel[]
+
+  @@map("labels")
+}
+
+model TaskLabel {
+  taskId  Int
+  labelId Int
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+  @@index([labelId])
+  @@map("task_labels")
+}
+
+model TaskComment {
+  id        Int       @id @default(autoincrement())
+  taskId    Int
+  userId    Int
+  body      String    @db.VarChar(2000)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+  @@index([userId])
+  @@map("task_comments")
 }
 
 // ============================================================

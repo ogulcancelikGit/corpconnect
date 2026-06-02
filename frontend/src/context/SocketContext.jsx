@@ -27,6 +27,11 @@ export const SocketProvider = ({ children }) => {
       transports: ['websocket'],
     })
 
+    // Bağlanır bağlanmaz o an online olan herkesin listesini al
+    newSocket.on('user:online:list', (userIds) => {
+      setOnlineUsers((prev) => [...new Set([...prev, ...(userIds || [])])])
+    })
+
     newSocket.on('user:online', ({ userId }) => {
       setOnlineUsers((prev) => [...new Set([...prev, userId])])
     })

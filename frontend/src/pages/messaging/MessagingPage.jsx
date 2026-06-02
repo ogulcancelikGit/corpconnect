@@ -434,11 +434,11 @@ const MessagingPage = () => {
       }
     }
     const onTypingStart = ({ userId, conversationId }) => {
-      if (userId !== user.id && conversationId === selectedConv.id)
+      if (userId !== user.id && Number(conversationId) === Number(selectedConv.id))
         setTypingUsers((p) => [...new Set([...p, userId])])
     }
     const onTypingStop = ({ userId, conversationId }) => {
-      if (conversationId === selectedConv.id)
+      if (Number(conversationId) === Number(selectedConv.id))
         setTypingUsers((p) => p.filter((id) => id !== userId))
     }
     socket.on('message:receive', onReceive)
@@ -461,18 +461,16 @@ const MessagingPage = () => {
 
   // ── User searches ──────────────────────────────────────────────────────────
   useEffect(() => {
-    if (debouncedDirect.length >= 2)
-      userService.searchUsers(debouncedDirect).then((r) => setDirectResults(r.data || [])).catch(() => {})
-    else setDirectResults([])
-  }, [debouncedDirect])
+    if (!showNewDirect) { setDirectResults([]); return }
+    userService.searchUsers(debouncedDirect).then((r) => setDirectResults(r.data || [])).catch(() => setDirectResults([]))
+  }, [debouncedDirect, showNewDirect])
 
   useEffect(() => {
-    if (debouncedGroup.length >= 2)
-      userService.searchUsers(debouncedGroup)
-        .then((r) => setGroupResults((r.data || []).filter((u) => u.id !== user.id && !selectedGroupUsers.find((s) => s.id === u.id))))
-        .catch(() => {})
-    else setGroupResults([])
-  }, [debouncedGroup, selectedGroupUsers, user.id])
+    if (!showNewGroup) { setGroupResults([]); return }
+    userService.searchUsers(debouncedGroup)
+      .then((r) => setGroupResults((r.data || []).filter((u) => u.id !== user.id && !selectedGroupUsers.find((s) => s.id === u.id))))
+      .catch(() => setGroupResults([]))
+  }, [debouncedGroup, selectedGroupUsers, user.id, showNewGroup])
 
   useEffect(() => {
     if (debouncedAdd.length >= 2)
@@ -963,14 +961,23 @@ const MessagingPage = () => {
               placeholder="Grup adı *" className={inputCls} />
             <input value={groupSearch} onChange={(e) => setGroupSearch(e.target.value)}
               placeholder="Üye ara..." className={inputCls} />
-            {groupResults.length > 0 && (
-              <div className="max-h-28 overflow-y-auto space-y-0.5">
+            {groupResults.length === 0 ? (
+              <p className="text-[11px] text-slate-400 text-center py-2">Eklenecek kullanıcı yok</p>
+            ) : (
+              <div className="max-h-56 overflow-y-auto space-y-0.5 border border-slate-200 rounded-lg bg-white p-1">
                 {groupResults.map((u) => (
                   <button key={u.id} onClick={() => { setSelectedGroupUsers((p) => [...p, u]); setGroupSearch('') }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-white rounded-lg text-left transition-colors">
+                    className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-blue-50 rounded-md text-left transition-colors">
                     <Avatar firstName={u.firstName} lastName={u.lastName} size="sm" />
-                    <span className="text-xs text-slate-700">{u.firstName} {u.lastName}</span>
-                    <UserPlus size={11} className="ml-auto text-blue-500" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-slate-700 truncate">{u.firstName} {u.lastName}</p>
+                      {(u.profile?.department || u.profile?.position) && (
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {[u.profile?.department, u.profile?.position].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                    </div>
+                    <UserPlus size={11} className="text-blue-500 shrink-0" />
                   </button>
                 ))}
               </div>
@@ -1013,7 +1020,7 @@ const MessagingPage = () => {
             directResults.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-slate-400">
                 <Search size={24} strokeWidth={1} className="mb-2" />
-                <p className="text-xs">{directSearch.length < 2 ? 'En az 2 karakter girin' : 'Kullanıcı bulunamadı'}</p>
+                <p className="text-xs">Kullanıcı bulunamadı</p>
               </div>
             ) : (
               <div className="py-1">

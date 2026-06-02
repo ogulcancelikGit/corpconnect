@@ -5,20 +5,27 @@ const pollHandler = require('./handlers/poll.handler')
 const prisma = require('../config/database')
 const logger = require('../utils/logger')
 
+// userId -> aktif socket id kümesi (aynı kullanıcının birden çok sekmesi olabilir)
 const onlineUsers = new Map()
 
 const initHandlers = (io) => {
   io.on('connection', (socket) => {
+    const uid = socket.user.id
     logger.info(`Kullanıcı bağlandı: ${socket.user.email}`)
 
     // Kullanıcıyı kendi odasına ekle (bildirimler için)
-    socket.join(`user:${socket.user.id}`)
+    socket.join(`user:${uid}`)
 
-    // Online kullanıcıya ekle
-    onlineUsers.set(socket.user.id, socket.id)
+    // Online kümesine ekle; bu kullanıcı için ilk bağlantı mı?
+    const wasOffline = !onlineUsers.has(uid) || onlineUsers.get(uid).size === 0
+    if (!onlineUsers.has(uid)) onlineUsers.set(uid, new Set())
+    onlineUsers.get(uid).add(socket.id)
 
-    // Online olduğunu herkese bildir
-    io.emit('user:online', { userId: socket.user.id })
+    // Yeni bağlanan sokete o an online olan herkesin listesini gönder
+    socket.emit('user:online:list', Array.from(onlineUsers.keys()))
+
+    // Bu kullanıcı yeni online olduysa herkese bildir (zaten online'sa tekrar gönderme)
+    if (wasOffline) io.emit('user:online', { userId: uid })
 
     // Handler'ları başlat
     messageHandler(io, socket)
@@ -26,11 +33,16 @@ const initHandlers = (io) => {
     notificationHandler(io, socket)
     pollHandler(io, socket)
 
-    // Bağlantı kesilince
+    // Bağlantı kesilince — yalnızca kullanıcının SON sekmesi de kapanınca offline yap
     socket.on('disconnect', () => {
       logger.info(`Kullanıcı ayrıldı: ${socket.user.email}`)
-      onlineUsers.delete(socket.user.id)
-      io.emit('user:offline', { userId: socket.user.id })
+      const set = onlineUsers.get(uid)
+      if (!set) return
+      set.delete(socket.id)
+      if (set.size === 0) {
+        onlineUsers.delete(uid)
+        io.emit('user:offline', { userId: uid })
+      }
     })
   })
 }

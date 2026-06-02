@@ -28,7 +28,7 @@ const ResetPasswordPage = () => {
       return
     }
     try {
-      await authService.resetPassword({ token, newPassword: data.password })
+      await authService.resetPassword({ token, password: data.password })
       toast.success('Şifre sıfırlandı, giriş yapabilirsiniz')
       navigate('/login')
     } catch (err) {

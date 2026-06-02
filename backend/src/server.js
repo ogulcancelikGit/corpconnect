@@ -11,6 +11,7 @@ const routes = require('./routes/index')
 const path = require('path')
 const logger = require('./utils/logger')
 const celebrationJob = require('./jobs/celebrationJob')
+const taskReminderJob = require('./jobs/taskReminderJob')
 
 dotenv.config()
 
@@ -49,6 +50,7 @@ const PORT = process.env.PORT || 5000
 server.listen(PORT, () => {
   logger.info(`Server ${PORT} portunda çalışıyor — ortam: ${process.env.NODE_ENV || 'development'}`)
   celebrationJob.start()
+  taskReminderJob.start()
 })
 
 module.exports = { app, server }

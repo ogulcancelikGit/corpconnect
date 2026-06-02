@@ -45,7 +45,7 @@ const SuggestionsAdminPage = () => {
         suggestionService.getStats(),
       ])
       setSuggestions(sugRes.data.data)
-      setMeta(sugRes.data.meta)
+      setMeta(sugRes.data.pagination)
       setStats(statRes.data.data)
     } catch {
       toast.error('Veriler yüklenemedi')

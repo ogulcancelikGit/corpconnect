@@ -1,15 +1,6 @@
 import api from './api.service'
 import { setAccessToken, setRefreshToken, setUser, clearStorage } from '../utils/storage'
 
-const register = async (data) => {
-  const response = await api.post('/auth/register', data)
-  const { user, accessToken, refreshToken } = response.data.data
-  setAccessToken(accessToken)
-  setRefreshToken(refreshToken)
-  setUser(user)
-  return response.data
-}
-
 const login = async (data) => {
   const response = await api.post('/auth/login', data)
   const { user, accessToken, refreshToken } = response.data.data
@@ -48,4 +39,4 @@ const changePassword = async (data) => {
   return response.data
 }
 
-export default { register, login, logout, getMe, forgotPassword, resetPassword, changePassword }
+export default { login, logout, getMe, forgotPassword, resetPassword, changePassword }

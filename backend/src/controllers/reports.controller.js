@@ -17,8 +17,11 @@ const leaveReport = async (req, res) => {
       },
       include: {
         user: {
-          select: { firstName: true, lastName: true },
-          include: { profile: { select: { department: true, position: true } } },
+          select: {
+            firstName: true,
+            lastName: true,
+            profile: { select: { department: true, position: true } },
+          },
         },
       },
     })
@@ -91,8 +94,12 @@ const leaveReportCsv = async (req, res) => {
       orderBy: { startDate: 'asc' },
       include: {
         user: {
-          select: { firstName: true, lastName: true, email: true },
-          include: { profile: { select: { department: true, position: true } } },
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            profile: { select: { department: true, position: true } },
+          },
         },
         reviewer: { select: { firstName: true, lastName: true } },
       },

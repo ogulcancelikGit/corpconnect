@@ -38,7 +38,6 @@ import { SocketProvider } from './context/SocketContext'
 import { NotificationProvider } from './context/NotificationContext'
 
 import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
@@ -53,6 +52,7 @@ import MessagingPage from './pages/messaging/MessagingPage'
 import ProfilePage from './pages/profile/ProfilePage'
 import LeavePage from './pages/leave/LeavePage'
 import TaskPage from './pages/tasks/TaskPage'
+import TaskDetailPage from './pages/tasks/TaskDetailPage'
 import ExpensePage from './pages/expenses/ExpensePage'
 import CalendarPage from './pages/calendar/CalendarPage'
 
@@ -110,7 +110,6 @@ const AppRoutes = () => {
             ? <Navigate to="/superadmin" replace />
             : <Navigate to="/" replace />
       } />
-      <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" replace />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
@@ -148,6 +147,7 @@ const AppRoutes = () => {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="leaves" element={<LeavePage />} />
         <Route path="tasks" element={<TaskPage />} />
+        <Route path="tasks/:id" element={<TaskDetailPage />} />
         <Route path="expenses" element={<ExpensePage />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="suggestions" element={<SuggestionsPage />} />

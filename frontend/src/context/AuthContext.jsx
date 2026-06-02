@@ -36,12 +36,6 @@ export const AuthProvider = ({ children }) => {
     return response
   }
 
-  const register = async (data) => {
-    const response = await authService.register(data)
-    setUserState(response.data.user)
-    return response
-  }
-
   const logout = async () => {
     await authService.logout()
     setUserState(null)
@@ -63,7 +57,6 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
-        register,
         logout,
         updateUser,
         isAdmin,
