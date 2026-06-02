@@ -46,6 +46,101 @@ const PRIORITY_LABELS = { LOW: 'Düşük', NORMAL: 'Normal', HIGH: 'Yüksek', UR
 
 const DEFAULT_FORM = { title: '', description: '', priority: 'NORMAL', dueDate: '', assignedTo: '' }
 
+// Modül seviyesinde sabit kimlikli bileşen — TaskPage içinde tanımlanırsa her render'da
+// yeni tip oluşur ve sürükleme sırasındaki setState kartları remount edip native drag'i bozar.
+const TaskCard = ({ task, editable, overdue, dragging, isManager, userId, onDragStart, onDragEnd, onStatusChange, onEdit, onDelete }) => (
+  <div
+    draggable={editable}
+    onDragStart={() => onDragStart(task.id)}
+    onDragEnd={onDragEnd}
+    className={`bg-white border rounded-lg p-4 hover:border-gray-300 transition-colors ${overdue ? 'border-red-200' : 'border-gray-200'} ${editable ? 'cursor-grab active:cursor-grabbing' : ''} ${dragging ? 'opacity-40' : ''}`}
+  >
+    <div className="flex items-start justify-between gap-2 mb-2">
+      <Link
+        to={`/tasks/${task.id}`}
+        className="text-sm font-medium text-gray-900 flex-1 leading-snug hover:underline decoration-gray-300"
+      >
+        {task.title}
+      </Link>
+      <StatusPill priority={task.priority} className="shrink-0" />
+    </div>
+
+    {task.description && (
+      <p className="text-xs text-gray-500 mb-3 line-clamp-2">{task.description}</p>
+    )}
+
+    {task.labels?.length > 0 && <LabelChips labels={task.labels} className="mb-3" />}
+
+    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+      <div className="flex items-center gap-1.5 min-w-0">
+        {task.assignee ? (
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="w-5 h-5 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0">
+              {task.assignee.firstName[0]}
+            </span>
+            <span className="truncate">{task.assignee.firstName} {task.assignee.lastName}</span>
+          </span>
+        ) : (
+          <span className="italic text-gray-400">Atanmamış</span>
+        )}
+      </div>
+      {task.dueDate && (
+        <span className={`inline-flex items-center gap-1 shrink-0 ${overdue ? 'text-red-600 font-medium' : ''}`}>
+          {overdue && <AlertTriangle size={11} strokeWidth={2} />}
+          {formatDate(task.dueDate)}
+        </span>
+      )}
+    </div>
+
+    {editable && (
+      <div className="flex gap-1.5 flex-wrap">
+        {NEXT_STATUS[task.status] && (
+          <button
+            onClick={() => onStatusChange(task, NEXT_STATUS[task.status])}
+            className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-900 text-white font-medium rounded-md hover:bg-gray-800 transition-colors"
+          >
+            {task.status === 'REVIEW'
+              ? <><Check size={10} strokeWidth={2.5} /> {NEXT_LABEL[task.status]}</>
+              : <><Play size={10} strokeWidth={2.5} /> {NEXT_LABEL[task.status]}</>}
+          </button>
+        )}
+        {['TODO', 'IN_PROGRESS', 'REVIEW'].includes(task.status) && (
+          <button
+            onClick={() => onStatusChange(task, 'CANCELLED')}
+            className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors"
+          >
+            İptal
+          </button>
+        )}
+        {task.status === 'CANCELLED' && (
+          <button
+            onClick={() => onStatusChange(task, 'TODO')}
+            className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors"
+          >
+            Geri Al
+          </button>
+        )}
+        {(isManager || task.creator?.id === userId) && (
+          <button
+            onClick={() => onEdit(task)}
+            className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors"
+          >
+            Düzenle
+          </button>
+        )}
+        {(isManager || task.creator?.id === userId) && (
+          <button
+            onClick={() => onDelete(task.id)}
+            className="text-xs px-2.5 py-1 text-red-500 hover:text-red-700 transition-colors"
+          >
+            Sil
+          </button>
+        )}
+      </div>
+    )}
+  </div>
+)
+
 const TaskPage = () => {
   const { user, hasRole } = useAuth()
   const isManager = hasRole('ADMIN', 'MANAGER')
@@ -220,99 +315,6 @@ const TaskPage = () => {
   const isOverdue = (task) => task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'DONE' && task.status !== 'CANCELLED'
   const canEdit = (task) => isManager || task.creator?.id === user?.id || task.assignee?.id === user?.id
 
-  const TaskCard = ({ task }) => (
-    <div
-      draggable={canEdit(task)}
-      onDragStart={() => setDraggingId(task.id)}
-      onDragEnd={() => { setDraggingId(null); setDragOverCol(null) }}
-      className={`bg-white border rounded-lg p-4 hover:border-gray-300 transition-colors ${isOverdue(task) ? 'border-red-200' : 'border-gray-200'} ${canEdit(task) ? 'cursor-grab active:cursor-grabbing' : ''} ${draggingId === task.id ? 'opacity-40' : ''}`}
-    >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <Link
-          to={`/tasks/${task.id}`}
-          className="text-sm font-medium text-gray-900 flex-1 leading-snug hover:underline decoration-gray-300"
-        >
-          {task.title}
-        </Link>
-        <StatusPill priority={task.priority} className="shrink-0" />
-      </div>
-
-      {task.description && (
-        <p className="text-xs text-gray-500 mb-3 line-clamp-2">{task.description}</p>
-      )}
-
-      {task.labels?.length > 0 && <LabelChips labels={task.labels} className="mb-3" />}
-
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-        <div className="flex items-center gap-1.5 min-w-0">
-          {task.assignee ? (
-            <span className="flex items-center gap-1.5 min-w-0">
-              <span className="w-5 h-5 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0">
-                {task.assignee.firstName[0]}
-              </span>
-              <span className="truncate">{task.assignee.firstName} {task.assignee.lastName}</span>
-            </span>
-          ) : (
-            <span className="italic text-gray-400">Atanmamış</span>
-          )}
-        </div>
-        {task.dueDate && (
-          <span className={`inline-flex items-center gap-1 shrink-0 ${isOverdue(task) ? 'text-red-600 font-medium' : ''}`}>
-            {isOverdue(task) && <AlertTriangle size={11} strokeWidth={2} />}
-            {formatDate(task.dueDate)}
-          </span>
-        )}
-      </div>
-
-      {canEdit(task) && (
-        <div className="flex gap-1.5 flex-wrap">
-          {NEXT_STATUS[task.status] && (
-            <button
-              onClick={() => handleStatusChange(task, NEXT_STATUS[task.status])}
-              className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-900 text-white font-medium rounded-md hover:bg-gray-800 transition-colors"
-            >
-              {task.status === 'REVIEW'
-                ? <><Check size={10} strokeWidth={2.5} /> {NEXT_LABEL[task.status]}</>
-                : <><Play size={10} strokeWidth={2.5} /> {NEXT_LABEL[task.status]}</>}
-            </button>
-          )}
-          {['TODO', 'IN_PROGRESS', 'REVIEW'].includes(task.status) && (
-            <button
-              onClick={() => handleStatusChange(task, 'CANCELLED')}
-              className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              İptal
-            </button>
-          )}
-          {task.status === 'CANCELLED' && (
-            <button
-              onClick={() => handleStatusChange(task, 'TODO')}
-              className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Geri Al
-            </button>
-          )}
-          {(isManager || task.creator?.id === user?.id) && (
-            <button
-              onClick={() => openEdit(task)}
-              className="text-xs px-2.5 py-1 border border-gray-200 text-gray-600 rounded-md hover:border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Düzenle
-            </button>
-          )}
-          {(isManager || task.creator?.id === user?.id) && (
-            <button
-              onClick={() => handleDelete(task.id)}
-              className="text-xs px-2.5 py-1 text-red-500 hover:text-red-700 transition-colors"
-            >
-              Sil
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  )
-
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
@@ -441,7 +443,22 @@ const TaskPage = () => {
                       {isDragOver ? 'Buraya bırak' : 'Görev yok'}
                     </p>
                   ) : (
-                    colTasks.map((task) => <TaskCard key={task.id} task={task} />)
+                    colTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        editable={canEdit(task)}
+                        overdue={isOverdue(task)}
+                        dragging={draggingId === task.id}
+                        isManager={isManager}
+                        userId={user?.id}
+                        onDragStart={setDraggingId}
+                        onDragEnd={() => { setDraggingId(null); setDragOverCol(null) }}
+                        onStatusChange={handleStatusChange}
+                        onEdit={openEdit}
+                        onDelete={handleDelete}
+                      />
+                    ))
                   )}
                 </div>
               </div>
