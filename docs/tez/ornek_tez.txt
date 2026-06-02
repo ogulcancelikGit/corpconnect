@@ -1,0 +1,335 @@
+          FACULTY OF APPLIED SCIENCES
+INFORMATION SYSTEMS AND TECHNOLOGIES
+
+                      PROJECT NAME
+
+                 GRADUATION PROJECT
+                 F rst Name, LAST NAME
+
+                          Month, Year
+          FACULTY OF APPLIED SCIENCES
+INFORMATION SYSTEMS AND TECHNOLOGIES
+
+                     PROJECT NAME
+
+                GRADUATION PROJECT
+                F rst Name, LAST NAME
+Has been prepared to meet the undergraduate degree.
+
+                          Superv sor:
+               Asst.Prof. Yusuf Al DANI
+
+                         Month, Year
+CONTENTS
+
+Insert a table of contents n th s area us ng the References tab. To do th s, select Custom
+Table of Contents. An example table for th s template s prov ded below. F ll n the sect on
+below th s head ng us ng 12-po nt font. After creat ng the table, f you have made any
+changes to the head ngs, hover over the table, r ght-cl ck, and select Update Ent re F eld.
+By the end of the day, the overall structure of your table should look l ke the example
+below.
+
+Bu alana Bavurular sekmes nden ç ndek ler tablosu ekley n z. Bunun ç n Özel
+ç ndek ler Tablosunu seç n. Aaida bu ablona a t örnek tablo mevcuttur. Bu baliin
+altini 12 punto olarak doldurunuz. Tabloyu oluturduktan sonra eer baliklarda
+de  kler yaptiysaniz, tablonun üzer ne gel n ve sa tiklatarak tüm alani güncellet r n.
+Günün sonunda tablonuzun genel hatti aaidak g b olmalidir.
+
+LIST OF FIGURES ...........................................................................................................
+LIST OF TABLES ............................................................................................................
+LIST OF ABBREVIATIONS ..........................................................................................
+ABSTRACT...................................................................................................................... v
+ACKNOWLEDGEMENT ............................................................................................... v
+1. INTRODUCTION ........................................................................................................ 1
+2. LITERATUR REVIEW ................................................................................................ 2
+3. MAIN HEADING......................................................................................................... 3
+
+   3.1. Sub Chapter Head ng ............................................................................................. 3
+      3.1.1. Sub Head ng.................................................................................................... 4
+         3.1.1.1. Fazla Alt Balik........................................................................................ 5
+
+4. MAIN HEADING......................................................................................................... 6
+   4.1. Sub Head ng........................................................................................................... 6
+      4.1.1. Sub Head ng.................................................................................................... 6
+5. CONCLUSION AND RECOMMENDATIONS .......................................................... 7
+REFERENCES ................................................................................................................. 9
+APPENDICES ................................................................................................................ 10
+
+IMPORTANT NOTE: When you select the "Show All" symbol (¶) from the Home tab,
+you w ll see the phrase "sect on break (next page)" at the end of the content for each ma n
+sect on n the template. The purpose of th s s to automat cally start each ma n sect on on
+a new page. To do th s, go two l nes below the paragraph/text at the end of the ma n
+sect on, and then select Layout > Breaks > Sect on Break (Next Page).
+After th s process, always check the spac ng before and after your texts/head ngs us ng
+the ¶ symbol. Apart from that, you can always use ¶ to check the spac ng between l nes.
+Delete any content n the template that s not related to your thes s and make necessary
+mod f cat ons where needed.
+
+ÖNEML NOT: G r  sekmes nde "tümünü göster" sembolünü (¶) seçt  n zde,
+ablondak her ana bölüm baliina a t çer kler n b tt  yerde "bölüm sonu (sonrak
+sayfa)" bares n göreceks n z. Bunun amaci, her ana bölümü otomat k olarak b r sonrak
+sayfadan balatmaktir. Bunun ç n ana bölüm sonundak paragrafin/metn n k alt satirina
+gel n ve sirasiyla Düzen, Kesmeler ve Bölüm Sonunu seç n. Bu lemden sonra her
+defasinda met nler n z n/baliklarinizin önces ve sonrasindak boluklari ¶ le kontrol
+ed n z. Bunun har c nde de her zaman satirlar arasindak boluklari ¶ le kontrol
+edeb l rs n z. ablonda tez n zle lg s olmayan her türlü çer  s l n z, gerekl yerler
+de t r n z.
+LIST OF FIGURES
+
+ek l 3.1 W ndows Temasi................................................................................................ 4
+ek l 3.2 W ndows Temasi-2 ............................................................................................ 4
+
+If you have f gures and llustrat ons, please nsert a table of f gures from the References
+tab n th s area. F ll n the sect on below th s head ng us ng 12-po nt font.
+F gure t tles are numbered and placed below the f gure. The f gure number and t tle should
+be wr tten n 10-po nt font and centered w th the f gure n your sect on head ngs. When
+number ng, the References tab should be used. Otherw se, you w ll not be able to
+automat cally generate the l st of f gures. F gures are nserted below the paragraph n
+wh ch they are ment oned. However, n some cases, they can be placed above the
+paragraph to ma nta n the page layout.
+
+Eer ek l ve ek ller n z varsa, bu alana bavurular sekmes nden ek ller tablosu
+ekley n z. Bu baliin altini 12 punto olarak doldurunuz.
+ek l adlari ekl n altina numaralandirilarak yapilir. ek l numarasi ve adi bölüm
+baliklariniz çer s nde 10 punto olacak ek lde ve ek lle b rl kte ortali olarak yazilir.
+Numaralandirma yapilirken bavurular sekmes kullanilir. Aks takd rde, ek ller l stes n
+otomat k olarak oluturamazsiniz. ek ller, kend nden bahsed ld kten sonra adinin geçt 
+paragrafin altina eklen r. Ancak, sayfa düzen n korumak ç n bazi durumlarda paragrafin
+üzer ne de ekleneb l r.
+LIST OF TABLES
+
+Tablo 3.1 Yaz Okulunda Açilan Dersler............................................................................ 4
+
+If you have tables, nsert a Table of F gures from the References tab n th s sect on. In
+the w ndow that opens, change the capt on label to Table. F ll n the sect on below th s
+head ng us ng 12-po nt font.
+Table t tles should be placed above the tables. Table numbers and t tles should be left-
+al gned and wr tten n 10-po nt font w th n your sect on head ngs. The tables themselves
+should also be formatted as left-al gned.
+
+Eer tablo ve tablolariniz varsa, bu alana bavurular sekmes nden ek ller tablosu
+ekley n z. Açilan pencerede res m yazisi et ket n tablo olarak de t r n z. Bu baliin
+altini 12 punto olarak doldurunuz.
+Tablo s mler tablolarin üzer ne yazilir. Tablo numaralari ve tablo s mler bölüm
+baliklariniz çer s nde 10 punto olacak ek lde sola h zalanmalidir. Tablolar da sola h zali
+olarak oluturulmalidir.
+LIST OF ABBREVIATIONS
+
+If you have any abbrev at ons, add them to the table below w th the borders removed. Use
+a separate row n the table for each abbrev at on. A sample table s prov ded below. F ll
+n the content under th s head ng n 12-po nt font.
+
+Eer kisaltmalariniz varsa aaida kenarliklari kaldirilan tabloya ekley n. Her kisaltma
+ç n ayri tablo satirlari kullanin. Örnek tablo aaida ver lm t r. Bu baliin altini 12
+punto olarak doldurunuz.
+
+INF  Informat on Systems and Technolog es
+
+EU   Euroean Un on
+ABSTRACT
+
+                                 PROJECT NAME
+
+   W th n the text (as shown here), ndent the beg nn ng of each paragraph (the f rst l ne)
+by 0.5 cm. Your abstract should be at least 150 and at most 300 words. The number of
+keywords should be no fewer than 3 and no more than 5. Th s sect on s mandatory.
+
+   Keywords:
+
+                                                    v
+ACKNOWLEDGEMENT
+
+   Th s sect on s opt onal. It s not mandatory.
+   Bu bölüm ops yoneld r. Zorunlu de ld r.
+
+                                                    v
+1. INTRODUCTION
+
+   A general ntroduct on to the project top c s prov ded. The purpose and s gn f cance
+of the top c are d scussed n broad terms, and the ma n reasons for choos ng th s subject
+are expla ned. The mpact of th s approach on people/soc ety/ nformat on technolog es,
+etc., as well as the nnovat ons/advantages/conven ences t may br ng to these areas, are
+clar f ed. Then, a br ef summary of the content covered n the follow ng sect ons of the
+study s g ven. In other words, the project s summar zed step by step accord ng to the
+sequence of ts chapters.
+
+   Proje konusuna genel b r g r  yapilir. Genel hatlari le konunun amaci ve önem nden
+bahsed l r ve bu konuya yönelmen zdek temel unsurlar ortaya konur. Bu yaklaiminizin
+nsan/toplum/b l  m vb. üzer ndek yer , bu alanlara get rece
+yen l kler/avantajlar/kolayliklar vb. açiklanir. Daha sonra, çalimanin devam eden
+baliklarinda kisaca nelerden bahsett  n z özetlenerek açiklanir. D er b r fadeyle,
+çalimanizi adim adim bölüm sirasina göre özetlers n z.
+
+                                                    1
+2. LITERATUR REVIEW
+
+   You are expected to research the ex st ng equ valents of your env s oned
+project/appl cat on and refer to prev ously conducted stud es. At the end of th s sect on,
+you should h ghl ght n more deta l the d st nct ve features and d fferences of your
+or g nal work, and then trans t on nto the chapters related to the mplementat on of your
+project.
+
+   Hayal n zdek projen n/uygulamanin muad ller n aratirmaniz ve daha önce yapilmi
+çalimalara de nmen z beklen r. Bölümün sonunda se daha ayrintili olarak kend özgün
+çalimanizin öne çikan farkliliklarini/özell kler n ortaya koyar ve projen z n uygulamaya
+a t bölüm baliklarina geçers n z.
+
+                                                    2
+3. MAIN HEADING
+
+   Ma n sect on head ngs should be wr tten n all cap tal letters and n 18-po nt font s ze.
+Make sure your paragraphs start w th a 0.5 cm ndentat on. To do th s, go to the
+Paragraph sect on n the Home tab. In the Indentat on sect on, choose Spec al and set
+t to F rst L ne, then set the value to 0.5. Organ ze your ma n sect on head ngs so that
+there are at most 2 or 3. You can custom ze subhead ngs accord ng to the spec f cs of your
+project; the ones here are prov ded as examples. When you open the Word document, you
+w ll f nd the h erarch cal head ngs under the Styles sect on n the Home tab.
+
+   Ana bölüm baliklari tamami büyük 18 punto olarak yazilmalidir. Paragraflarinizin 0,5
+cm çer den balamasina d kkat ed n z. Bunun ç n G r 'tek Paragraf sekmes ne tiklayin.
+G r nt bölümünde Özel seçene n göreceks n z. Burayi lk Satir olarak de t r n ve
+Deer 0,5 olarak ayarlayin. Ana bölüm baliklarinizin sayisi en fazla 2 veya 3 olacak
+ek lde organ ze ed n. Alt baliklari projen z özel nde ayarlayab l rs n z, burada örnek
+olmasi amaciyla ver lm t r. Word belges n açiinizda h yerar k baliklari G r 'tek
+St ller sekmes nde bulacaksiniz.
+
+3.1. Sub Chapter Head ng
+   Pay attent on to the fact that only the f rst letter of subhead ngs should be cap tal zed.
+
+In number ng, ensure there are no more than 3 levels of ndentat on. The f rst (the leftmost
+number) belongs to the ma n sect on head ng. In th s case, you can only have up to 2
+levels of subhead ngs. There s no need for more levels n th s work.
+
+   Alt baliklarin sadece lk harfler n n büyük olduuna d kkat ed n z.
+Numaralandirmada ç çe en fazla 3 katman olmasina d kkat ed n z. B r nc s (en soldak
+numara) ana bölüm baliina a tt r. Bu durumda en fazla 2 düzey kadar daha alt balik
+açab l rs n z. Daha fazlasina bu çalimada gerek yoktur.
+
+                                                    3
+             F gure 3.1 W ndows Theme
+
+             Fgure 3.2 W ndows Theme-2
+
+3.1.1. Sub Head ng
+   Make sure that only the f rst letter of each subhead ng s cap tal zed. Your subhead ng
+
+level should be no more than th s. Set the font s ze of all subhead ngs to 12 po nts.
+
+   Alt baliklarin sadece lk harfler n n büyük olduuna d kkat ed n z. Alt balik
+düzey n z en fazla bu kadar olmalidir. Alt baliklarin tamamini 12 punto yapiniz.
+
+Tablo 3.1 Yaz Okulunda Açilan Dersler
+
+Ders n Kodu  Ders n Adi                 Dönem
+
+BST215       stat st k                  Yaz
+BST450
+             B t rme Projes             Yaz
+
+                         4
+3.1.1.1. Fazla Alt Balik
+   If poss ble, avo d creat ng too many levels of subhead ngs. When trans t on ng to the
+
+ma n sect on, make sure to add "Next Page" (Sect on Break) from the Breaks menu.
+   Mümkünse bu kadar fazla düzeyde alt balik açmayiniz. Ana bölüme geçerken
+
+Kesmelerden Sonrak Sayfa (Bölüm Sonu) eklend  ne d kkat ed n z.
+
+                                                    5
+4. MAIN HEADING
+
+   Paragraph-1
+   Paragraph-2
+   There s a 30 pt space after all ma n sect on head ngs.
+   Paragraf-1
+   Paragraf-2
+   Tüm ana bölüm baliklarindan sonra 30 nk boluk bulunmaktadir.
+4.1. Sub Head ng
+   Make sure that only the f rst letter of each subt tle s cap tal zed. There s an 18 pt
+space before all subt tles, and no space after them.
+   Alt baliklarin sadece lk harfler n n büyük olduuna d kkat ed n z. Tüm alt
+baliklardan önce 18 nk boluk bulunmaktadir. Sonrasinda boluk yoktur.
+4.1.1. Sub Head ng
+   Make sure that only the f rst letter of each subt tle s cap tal zed. There s an 18 pt
+space before all subt tles, and no space after them.
+   Alt baliklarin sadece lk harfler n n büyük olduuna d kkat ed n z. Tüm alt
+baliklardan önce 18 nk boluk bulunmaktadir. Sonrasinda boluk yoktur.
+
+                                                    6
+5. CONCLUSION AND RECOMMENDATIONS
+
+   The results of the project are wr tten n deta l here. Th s sect on elaborates on the
+results obta ned n prev ous sect ons and d scusses and nterprets them n depth. The
+contr but ons to the f eld of nformat on technology are also expla ned here. F nally,
+address any l m tat ons of your work and develop cr t cal thoughts on how t could be
+mproved, offer ng suggest ons for future researchers.
+
+   IMPORTANT NOTE: Ensure that the total number of pages for the Introduct on,
+L terature Rev ew, Ma n Sect ons, Results, and D scuss on s between 30-50 pages. To
+avo d exceed ng 50 pages n these sect ons, refra n from open ng too many ma n sect on
+head ngs, des gn the pages w th m n mal blank space, avo d overly large mage s zes,
+m n m ze extra space around mages and tables, and regularly check l ne spaces us ng the
+"Show All" funct on. Lastly, page numbers start w th Roman numerals ( , , , ...) from
+the L st of F gures, cont nu ng unt l the Introduct on. From the Introduct on onwards,
+page numbers should start at 1. The page numbers for the f rst page of the Introduct on
+and the f rst page of Ma n Sect on head ngs should not be v s ble. For more nformat on,
+you can refer to the thes s wr t ng gu del nes or contact me at OS or v a ema l at
+yusuf.dan s@okan.edu.tr.
+
+   Projen n sonuçlari detayli b ç mde burada yazilir. Daha öncek bölümlerde elde ed len
+sonuçlarin detayli olarak yorumlandii ve tartiildii kisimdir. B l  m dünyasina katkilari
+y ne burada da açiklanir. Son olarak, çalimanizin her türlü kisitlarina de n n ve nasil
+daha y hale get r leb lece yönünde elet rel düünceler gel t rerek s zden sonrak lere
+öner ler birakin.
+
+ÖNEML NOT: G r , L teratür Aratirmasi, Ana Bölümler, Sonuç ve Tartima
+bölümler n n toplam sayfa sayisinin 30-50 arasinda olmasina özen göster n z. Bu
+bölümlerdek toplam sayfa sayisinin 50'y amamasi ç n; fazla ana bölüm balii
+açmaktan kaçinin, sayfalari mümkün olduu kadar az boluk olacak ek lde tasarlayin,
+res mler n boyutunu abartmayin, res m ve tablolar üzer nde fazla boluk birakmayin ve
+
+                                                    7
+sürekl "tümünü göster" le satirlardak boluklari kontrol ed n. Son olarak, sayfa
+numaralari ç ndek ler l stes nden de l ek ller L stes nden t baren Romen rakamlari le
+( , , , ...) balar G r e kadar devam eder. G r ten t baren se 1'den balar. G r  n lk
+sayfasi le Ana Bölüm baliklarinin lk sayfasinda numaralar görünmez. Daha fazla b lg
+ç n tez yazim kurallarini nceleyeb l r OS veya yusuf.dan s@okan.edu.tr adres nden
+bana ulaab l rs n z.
+
+                                                    8
+REFERENCES
+
+Prepare your b bl ography n the appropr ate format. If the reference cons sts of mult ple
+l nes, the f rst l ne should have no ndentat on, and the rema n ng l nes should be ndented
+by 0.5 cm. The sample text below llustrates th s. Th s sect on s mandatory.
+Kaynakçanizi uygun formatta hazirlayin. Eer lg l kaynak b rden fazla satirdan
+oluuyorsa lk satirin g r nt s 0 ger ye kalanlarin se 0,5 cm olmalidir. Örnek met n
+aaidak g b d r. Bu bölüm zorunludur.
+Kaynakçanizi uygun formatta hazirlayin. Eer lg l kaynak b rden fazla satirdan
+
+   oluuyorsa lk satirin g r nt s 0 ger ye kalanlarin se 0,5 cm olmalidir.
+For th s, go to the Paragraph sect on, select the "Hang ng" opt on under Spec al, and set
+the value to 0.5 cm.
+Bunun ç n, Paragraf sekmes ne gel n, Özel seçene altinda Asiliyi seç n ve Deer 0,5
+cm olarak ayarlayin.
+
+                                                    9
+APPENDICES
+
+If appl cable, share your append ces. If you have long tables or code l nes that d srupt the
+flow of the project, place th s nformat on n the append ces. Create head ngs as shown
+below. The f rst letters should be cap tal zed and bold.
+Varsa ekler n z paylain. Proje akiini bozan uzun tablo veya kod satirlariniz varsa
+mümkünse bu b lg ler eklere yerlet r n. Aaidak g b baliklar oluturunuz. Ba harfler
+büyük ve kalin olmalidir.
+APPENDIX-1: RELATED TABLE
+Table
+Tablo
+APPENDIX-2: RELATED CODE LINES
+For code l nes ( f poss ble, place them w thout tak ng screenshots, you can choose
+Consolas as the font for the code), here's how you can structure t:
+Kod satiri (kod satirlarini mümkünse ekran görüntüsü almadan yerlet r n, kodlar ç n
+yazi fontu olarak Consolas seçeb l rs n z)
+
+                                                    10
+

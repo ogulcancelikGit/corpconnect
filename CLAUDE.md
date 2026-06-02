@@ -63,7 +63,7 @@ Format: `{ success: bool, message: string, data | errors, pagination? }`.
 
 **Activity Log:** Yazma işlemlerinde `activityLog.util.js` ile kayıt at (audit trail için kritik — admin `/logs` sayfası bundan besleniyor).
 
-**Rate limit:** Şu an sadece `/auth` route'unda (15dk / 10 deneme). Global limit henüz yok (P0 borç).
+**Rate limit:** Global limiter `server.js`'te aktif (15dk / 300 istek, `/api/health` hariç). `/auth` route'unda ek sıkı limit (15dk / 10 deneme).
 
 **Dosya yükleme:** `POST /api/files/upload` → `fileId` döner → ilgili kayıt (mesaj, masraf fişi, avatar) bu id ile bağlanır. Uploads `/uploads` static.
 
@@ -85,7 +85,7 @@ Format: `{ success: bool, message: string, data | errors, pagination? }`.
 - `components/layout/SuperAdminLayout.jsx` — ADMIN paneli (sidebar'lı)
 - `components/common/` **boş** — `EmptyState`, `LoadingSpinner` vb. henüz ortak bileşen haline getirilmemiş, her sayfa kendi yapıyor.
 
-**Form validasyon:** react-hook-form/zod **yok**. Manuel `if (!email) return` kontrolleri. Toast feedback için `react-hot-toast`.
+**Form validasyon:** react-hook-form + Zod kullanımda. Şemalar `frontend/src/schemas/*.schema.js` altında, sayfalarda `zodResolver` ile bağlanıyor. Toast feedback için `react-hot-toast`.
 
 ## Konvansiyonlar
 
@@ -97,6 +97,6 @@ Format: `{ success: bool, message: string, data | errors, pagination? }`.
 
 ## Bilinen Eksikler (Planlanan, uygulamadan)
 
-Detaylı yol haritası: `C:\Users\ogulc\.claude\plans\evet-bu-mod-ne-streamed-nova.md`.
+Şu an mevcut (eskiden eksik listesindeydi, artık yapıldı): winston logger (`utils/logger.js`), global rate limit (`server.js`), React ErrorBoundary (`App.jsx`), react-hook-form + Zod form validasyonu.
 
-Kısaca P0 (canlı öncesi): `.env` secrets rotate, Dockerfile/compose, winston logger, global rate limit, React ErrorBoundary, minimum integration test, KVKK aydınlatma metni.
+Halen eksik / gelecek çalışmalar: Dockerfile/compose, CI/CD, minimum entegrasyon testi (Jest+Supertest / Vitest), KVKK aydınlatma metni, Swagger/OpenAPI API dokümantasyonu, dark mode `dark:` class'larının tüm sayfalara yayılması, birkaç admin sayfasının (`ReportsAdminPage`, `OverviewPage`) `services/` katmanına taşınması. `.env` gitignore'da (sızıntı yok); örnek dosyadaki placeholder secret'lar gerçek değerle değiştirilmeli.
